@@ -7,6 +7,7 @@ import "./LandingPage.css";
 const App: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  //This is a comment to test git changes
 
   return (
     <div className="landing-page bg-white min-vh-100">
