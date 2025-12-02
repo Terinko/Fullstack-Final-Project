@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import bobcatLogo from "./bobcat.png";
-import CreateAccountModal from "./CreateAccountModal";
+import bobcatLogo from "./assets/bobcat.png";
 import LoginModal from "./LoginModal";
 import "./LandingPage.css";
 
@@ -163,6 +162,7 @@ const App: React.FC = () => {
               <h2 className="display-6 fw-bold">Getting Started</h2>
               <button
                 type="button"
+                id="createAccountButton"
                 className="btn btn-primary rounded-pill px-4"
                 onClick={() => setShowCreateModal(true)}
                 style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
@@ -224,11 +224,6 @@ const App: React.FC = () => {
       <LoginModal
         showModal={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-      />
-
-      <CreateAccountModal
-        showModal={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
       />
     </div>
   );
