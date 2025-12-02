@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import bobcatLogo from "./bobcat.png";
+import bobcatLogo from "./assets/bobcat.png";
 import FacultyFeedbackModal from "./FacultyFeedbackModal";
 import "./Student.css";
 

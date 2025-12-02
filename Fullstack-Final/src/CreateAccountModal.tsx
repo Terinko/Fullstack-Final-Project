@@ -14,8 +14,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   const navigate = useNavigate();
   const [userType, setUserType] = useState<string>("Student");
   const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -25,12 +23,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
 
     try {
       if (userType === "Student") {
@@ -48,7 +40,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           .from("Student")
           .insert({
             Student_Qu_Email: email,
-            Password: password,
             FirstName: firstName,
             LastName: lastName,
           })
@@ -77,7 +68,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           .from("Faculty_Admin")
           .insert({
             Faculty_Qu_Email: email,
-            Password: password,
             FirstName: firstName,
             LastName: lastName,
           })
@@ -102,8 +92,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   const resetForm = () => {
     setUserType("Student");
     setEmail("");
-    setPassword("");
-    setConfirmPassword("");
     setFirstName("");
     setLastName("");
     setError("");
@@ -181,28 +169,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                   className="form-control"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
               </div>
