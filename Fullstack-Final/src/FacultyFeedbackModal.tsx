@@ -33,23 +33,23 @@ const FacultyFeedbackModal: React.FC<FacultyFeedbackModalProps> = ({
         style={{ maxWidth: "800px" }}
       >
         <div className="modal-content">
-          <div className="modal-header border-0 position-relative">
-            <button
-              type="button"
-              className="btn rounded-pill px-4 py-2"
-              onClick={onClose}
-              style={{
-                position: "absolute",
-                left: "20px",
-                backgroundColor: "#1e1b4b",
-                color: "white",
-                border: "none",
-              }}
-            >
-              Back
-            </button>
+          <div className="modal-header border-0 d-flex flex-column align-items-center">
+            <div className="w-100 d-flex justify-content-start">
+              <button
+                type="button"
+                className="btn rounded-pill px-4 py-2 ms-3"
+                onClick={onClose}
+                style={{
+                  backgroundColor: "#1e1b4b",
+                  color: "white",
+                  border: "none",
+                }}
+              >
+                Back
+              </button>
+            </div>
             <h2
-              className="modal-title w-100 text-center fw-bold"
+              className="modal-title w-100 text-center fw-bold mt-3"
               style={{ fontSize: "2.5rem" }}
             >
               {lectureTitle} Feedback
