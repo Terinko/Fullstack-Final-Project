@@ -1,13 +1,25 @@
 import React, { useState } from "react";
 import bobcatLogo from "./assets/bobcat.png";
+import teach from "./assets/knowledge-transfer.png";
+import trust from "./assets/trust.png";
+import present from "./assets/presentation.png";
+import process from "./assets/process.png";
 import LoginModal from "./LoginModal";
 import "./LandingPage.css";
 import CreateAccountModal from "./CreateAccountModal";
+import CreatePasswordModal from "./CreatePasswordModal";
 
 const App: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  //This is a comment to test git changes
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  const [tempUserData, setTempUserData] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    userType: "",
+  });
 
   return (
     <div className="landing-page bg-white min-vh-100">
@@ -93,30 +105,21 @@ const App: React.FC = () => {
                 <div className="card border-0 h-100">
                   <div className="card-body">
                     <div className="mb-3">
-                      {/* Icons we can replace with an SVG or image as needed */}
-                      <span className="fs-3">🧠</span>
-                    </div>
-                    <h3 className="h6 fw-bold mb-2">Amplify Insights</h3>
-                    <p className="text-muted small">
-                      Unlock data-driven decisions with comprehensive analytics,
-                      revealing key opportunities for strategic regional growth.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-md-3">
-                <div className="card border-0 h-100">
-                  <div className="card-body">
-                    <div className="mb-3">
-                      <span className="fs-3">🌍</span>
+                      <img
+                        src={teach}
+                        alt="Bobcat Logo"
+                        className="img-fluid"
+                        style={{ width: "100px", height: "auto" }}
+                      />
                     </div>
                     <h3 className="h6 fw-bold mb-2">
-                      Control Your Global Presence
+                      Enhance Teaching Quality
                     </h3>
                     <p className="text-muted small">
-                      Manage and track satellite offices, ensuring consistent
-                      performance and streamlined operations everywhere.
+                      Give faculty targeted, actionable insights pulled directly
+                      from student experiences helping instructors refine
+                      delivery, pacing, and content clarity without needign all
+                      the extra work.
                     </p>
                   </div>
                 </div>
@@ -126,14 +129,21 @@ const App: React.FC = () => {
                 <div className="card border-0 h-100">
                   <div className="card-body">
                     <div className="mb-3">
-                      <span className="fs-3">🔧</span>
+                      <img
+                        src={trust}
+                        alt="Global Icon"
+                        className="img-fluid"
+                        style={{ width: "100px", height: "auto" }}
+                      />
                     </div>
                     <h3 className="h6 fw-bold mb-2">
-                      Remove Language Barriers
+                      Strengthen Trust & Transparency
                     </h3>
                     <p className="text-muted small">
-                      Adapt to diverse markets with built-in localization for
-                      clear communication and enhanced user experience.
+                      Create a safe environment for students to voice concerns
+                      and praise anonymously, fostering healthier communication
+                      channels and stronger relationships between students and
+                      instructors.
                     </p>
                   </div>
                 </div>
@@ -143,12 +153,43 @@ const App: React.FC = () => {
                 <div className="card border-0 h-100">
                   <div className="card-body">
                     <div className="mb-3">
-                      <span className="fs-3">📈</span>
+                      <img
+                        src={present}
+                        alt="Language Icon"
+                        className="img-fluid"
+                        style={{ width: "100px", height: "auto" }}
+                      />
                     </div>
-                    <h3 className="h6 fw-bold mb-2">Visualize Growth</h3>
+                    <h3 className="h6 fw-bold mb-2">
+                      Monitor Classroom Engagement
+                    </h3>
                     <p className="text-muted small">
-                      Generate precise, visually compelling reports that
-                      illustrate your growth trajectories across all regions.
+                      Track engagement trends over time to identify which
+                      lectures resonate, which need refinement, and where
+                      student participation can be improved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-md-3">
+                <div className="card border-0 h-100">
+                  <div className="card-body">
+                    <div className="mb-3">
+                      <img
+                        src={process}
+                        alt="Process Icon"
+                        className="img-fluid"
+                        style={{ width: "100px", height: "auto" }}
+                      />
+                    </div>
+                    <h3 className="h6 fw-bold mb-2">
+                      Streamline Faculty Workflows
+                    </h3>
+                    <p className="text-muted small">
+                      Cut down on manual review collection and organization with
+                      automated tools that help instructors quickly access,
+                      understand, and act on student feedback.
                     </p>
                   </div>
                 </div>
@@ -184,7 +225,8 @@ const App: React.FC = () => {
                 </div>
                 <h3 className="h5 fw-bold mb-3">Get Started</h3>
                 <p className="text-muted">
-                  With our intuitive setup, you're up and running in minutes.
+                  Set up your faculty or department portal in minutes and begin
+                  receiving real, anonymized student feedback right away.
                 </p>
               </div>
 
@@ -199,7 +241,9 @@ const App: React.FC = () => {
                 </div>
                 <h3 className="h5 fw-bold mb-3">Customize and Configure</h3>
                 <p className="text-muted">
-                  Adapt Aries to your specific requirements and preferences.
+                  Choose what types of insights you want to collect, tailor
+                  question sets, and configure how reviews are routed to
+                  instructors.
                 </p>
               </div>
 
@@ -212,9 +256,12 @@ const App: React.FC = () => {
                     03
                   </span>
                 </div>
-                <h3 className="h5 fw-bold mb-3">Grow Your Business</h3>
+                <h3 className="h5 fw-bold mb-3">
+                  Improve Teaching With Actionable Insights
+                </h3>
                 <p className="text-muted">
-                  Make informed decisions to exceed your goals.
+                  Leverage clear, focused analytics to enhance lecture content,
+                  boost engagement, and better understand student needs.
                 </p>
               </div>
             </div>
@@ -230,6 +277,17 @@ const App: React.FC = () => {
       <CreateAccountModal
         showModal={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        onContinue={(data) => {
+          setTempUserData(data);
+          setShowCreateModal(false);
+          setShowPasswordModal(true);
+        }}
+      />
+
+      <CreatePasswordModal
+        showModal={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        userData={tempUserData}
       />
     </div>
   );

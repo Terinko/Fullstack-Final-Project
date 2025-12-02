@@ -1,17 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 interface CreateAccountModalProps {
   showModal: boolean;
   onClose: () => void;
+  onContinue: (userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  }) => void;
 }
 
 const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   showModal,
   onClose,
+  onContinue,
 }) => {
-  const navigate = useNavigate();
   const [userType, setUserType] = useState<string>("Student");
   const [email, setEmail] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
@@ -25,65 +30,29 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     setLoading(true);
 
     try {
-      if (userType === "Student") {
-        const { data: existingUser } = await supabase
-          .from("Student")
-          .select("*")
-          .eq("Student_Qu_Email", email)
-          .single();
+      const tableName = userType === "Student" ? "Student" : "Faculty_Admin";
+      const emailColumn =
+        userType === "Student" ? "Student_Qu_Email" : "Faculty_Qu_Email";
 
-        if (existingUser) {
-          throw new Error("An account with this email already exists");
-        }
+      const { data: existingUser } = await supabase
+        .from(tableName)
+        .select("*")
+        .eq(emailColumn, email)
+        .single();
 
-        const { data, error } = await supabase
-          .from("Student")
-          .insert({
-            Student_Qu_Email: email,
-            FirstName: firstName,
-            LastName: lastName,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        console.log("Student account created:", data);
-        // alert("Student account created successfully!");
-        resetForm();
-        onClose();
-        navigate("/studentdashboard");
-      } else {
-        const { data: existingUser } = await supabase
-          .from("Faculty_Admin")
-          .select("*")
-          .eq("Faculty_Qu_Email", email)
-          .single();
-
-        if (existingUser) {
-          throw new Error("An account with this email already exists");
-        }
-
-        const { data, error } = await supabase
-          .from("Faculty_Admin")
-          .insert({
-            Faculty_Qu_Email: email,
-            FirstName: firstName,
-            LastName: lastName,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        console.log("Faculty/Admin account created:", data);
-        // alert("Faculty/Administrator account created successfully!");
-        resetForm();
-        onClose();
-        navigate("/facultyAdmin");
+      if (existingUser) {
+        throw new Error("An account with this email already exists");
       }
+
+      onContinue({ email, firstName, lastName, userType });
+      resetForm();
     } catch (err: any) {
-      setError(err.message || "Failed to create account");
+      if (err.code === "PGRST116") {
+        onContinue({ email, firstName, lastName, userType });
+        resetForm();
+      } else {
+        setError(err.message || "Failed to validate account");
+      }
     } finally {
       setLoading(false);
     }
@@ -185,7 +154,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                   className="btn btn-dark flex-grow-1"
                   disabled={loading}
                 >
-                  {loading ? "Creating Account..." : "Create Account"}
+                  {loading ? "Checking..." : "Next: Create Password"}
                 </button>
                 <button
                   type="button"
