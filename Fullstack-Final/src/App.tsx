@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import bobcatLogo from "./assets/bobcat.png";
 import LoginModal from "./LoginModal";
 import "./LandingPage.css";
+import CreateAccountModal from "./CreateAccountModal";
 
 const App: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -224,6 +225,11 @@ const App: React.FC = () => {
       <LoginModal
         showModal={showLoginModal}
         onClose={() => setShowLoginModal(false)}
+      />
+
+      <CreateAccountModal
+        showModal={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
       />
     </div>
   );
