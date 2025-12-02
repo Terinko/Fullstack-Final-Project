@@ -59,6 +59,7 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
       } else {
         //Insert into Faculty Table
         const { error } = await supabase.from("Faculty_Admin").insert({
+          Type: false,
           Faculty_Qu_Email: email + "@quinnipiac.edu",
           FirstName: firstName,
           LastName: lastName,
