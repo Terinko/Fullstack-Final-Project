@@ -19,12 +19,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
     setError("");
     setLoading(true);
 
+    const loginEmail = email.toLowerCase();
+
     try {
       //We want to check both tables so that the user doesn't have to specify their type
       const { data: studentData, error: studentError } = await supabase
         .from("Student")
         .select("*")
-        .eq("Student_Qu_Email", email)
+        .eq("Student_Qu_Email", loginEmail + "@quinnipiac.edu")
         .eq("Password", password)
         .single();
 
@@ -41,7 +43,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
       const { data: facultyData, error: facultyError } = await supabase
         .from("Faculty_Admin")
         .select("*")
-        .eq("Faculty_Qu_Email", email)
+        .eq("Faculty_Qu_Email", loginEmail + "@quinnipiac.edu")
         .eq("Password", password)
         .single();
 
@@ -97,24 +99,29 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
           <div className="modal-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label">Quinnipiac E-Mail</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                    required
+                    placeholder="Quinnipiac Email"
+                  />
+                  <span className="input-group-text" id="basic-addon2">
+                    @quinnipiac.edu
+                  </span>
+                </div>
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Password</label>
                 <input
                   type="password"
                   className="form-control"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  placeholder="Password"
                 />
               </div>
 

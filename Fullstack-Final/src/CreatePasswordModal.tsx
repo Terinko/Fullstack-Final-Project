@@ -45,7 +45,7 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
 
       if (userType === "Student") {
         const { error } = await supabase.from("Student").insert({
-          Student_Qu_Email: email,
+          Student_Qu_Email: email + "@quinnipiac.edu",
           FirstName: firstName,
           LastName: lastName,
           Password: password,
@@ -59,7 +59,7 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
       } else {
         //Insert into Faculty Table
         const { error } = await supabase.from("Faculty_Admin").insert({
-          Faculty_Qu_Email: email,
+          Faculty_Qu_Email: email + "@quinnipiac.edu",
           FirstName: firstName,
           LastName: lastName,
           Password: password,
@@ -100,24 +100,24 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
             </p>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label">Password</label>
                 <input
                   type="password"
                   className="form-control"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  placeholder="Password"
                 />
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Confirm Password</label>
                 <input
                   type="password"
                   className="form-control"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  placeholder="Confirm Password"
                 />
               </div>
 

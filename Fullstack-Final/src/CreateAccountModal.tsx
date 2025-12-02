@@ -29,6 +29,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     setError("");
     setLoading(true);
 
+    const cleanEmail = email.toLowerCase();
+
     try {
       const tableName = userType === "Student" ? "Student" : "Faculty_Admin";
       const emailColumn =
@@ -37,18 +39,18 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       const { data: existingUser } = await supabase
         .from(tableName)
         .select("*")
-        .eq(emailColumn, email)
+        .eq(emailColumn, cleanEmail + "@quinnipiac.edu")
         .single();
 
       if (existingUser) {
         throw new Error("An account with this email already exists");
       }
 
-      onContinue({ email, firstName, lastName, userType });
+      onContinue({ email: cleanEmail, firstName, lastName, userType });
       resetForm();
     } catch (err: any) {
       if (err.code === "PGRST116") {
-        onContinue({ email, firstName, lastName, userType });
+        onContinue({ email: cleanEmail, firstName, lastName, userType });
         resetForm();
       } else {
         setError(err.message || "Failed to validate account");
@@ -110,36 +112,41 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
               </div>
 
               <div className="mb-3">
-                <label className="form-label">First Name</label>
                 <input
                   type="text"
                   className="form-control"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
+                  placeholder="First Name"
                 />
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Last Name</label>
                 <input
                   type="text"
                   className="form-control"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
+                  placeholder="Last Name"
                 />
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Quinnipiac E-Mail</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                    required
+                    placeholder="Quinnipiac E-Mail"
+                  />
+                  <span className="input-group-text" id="basic-addon2">
+                    @quinnipiac.edu
+                  </span>
+                </div>
               </div>
 
               {error && (
