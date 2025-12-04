@@ -25,7 +25,7 @@ const App: React.FC = () => {
     <div className="landing-page bg-white min-vh-100">
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div className="container-fluid px-4 py-2">
-          <a className="navbar-brand fw-bold fs-5" href="#">
+          <a className="navbar-brand fw-bold fs-5" href="/">
             RateMyLectures
           </a>
           <div className="d-flex align-items-center mx-auto">

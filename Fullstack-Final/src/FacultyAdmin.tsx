@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import bobcatLogo from "./assets/bobcat.png";
 import FacultyFeedbackModal from "./FacultyFeedbackModal";
+import ProfileModal from "./ProfileModal";
+import profilePicture from "./assets/athimineur.jpeg";
 import "./Student.css";
 
 interface CourseSection {
@@ -15,8 +17,16 @@ interface Course {
 
 const FacultyAdmin: React.FC = () => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedLecture, setSelectedLecture] = useState<string>("");
-  const [selectedSection, setSelectedSection] = useState<string>("");
+  const [, setSelectedSection] = useState<string>("");
+  const [profile, setProfile] = useState({
+    name: "Alex Thimineur",
+    email: "Alexander.Thimineur@quinnipiac.edu",
+    department: "Computer Science",
+    bio: "Faculty member interested in teaching and research.",
+    profilePicture: profilePicture,
+  });
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 
   //Mock course data with sections - we need to replace with actual data from Supabase
@@ -86,17 +96,27 @@ const FacultyAdmin: React.FC = () => {
     <div className="landing-page bg-white min-vh-100">
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div className="container-fluid px-4 py-2">
-          <a className="navbar-brand fw-bold fs-5" href="#">
+          <a className="navbar-brand fw-bold fs-5" href="/">
             RateMyLectures
           </a>
-          <button
-            type="button"
-            className="btn btn-primary rounded-pill px-4"
-            onClick={() => (window.location.href = "/")}
-            style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
-          >
-            Sign Out
-          </button>
+          <div className="d-flex gap-3">
+            <button
+              type="button"
+              className="btn btn-primary rounded-pill px-2.5"
+              style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+              onClick={() => setShowProfileModal(true)}
+            >
+              <i className="bi bi-person-circle" style={{ fontSize: "1.5rem" }}></i>
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary rounded-pill px-4"
+              onClick={() => (window.location.href = "/")}
+              style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -147,11 +167,10 @@ const FacultyAdmin: React.FC = () => {
                       >
                         <h3 className="fw-bold mb-0">{course.courseName}</h3>
                         <i
-                          className={`bi ${
-                            expandedCourse === course.courseName
-                              ? "bi-chevron-up"
-                              : "bi-chevron-down"
-                          }`}
+                          className={`bi ${expandedCourse === course.courseName
+                            ? "bi-chevron-up"
+                            : "bi-chevron-down"
+                            }`}
                           style={{ fontSize: "1.5rem" }}
                         ></i>
                       </div>
@@ -206,6 +225,13 @@ const FacultyAdmin: React.FC = () => {
         onClose={() => setShowFeedbackModal(false)}
         lectureTitle={selectedLecture}
         feedbackData={mockFeedbackData}
+      />
+
+      <ProfileModal
+        showModal={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        profile={profile}
+        onSave={(data) => setProfile(data)}
       />
     </div>
   );

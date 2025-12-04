@@ -3,12 +3,22 @@ import bobcatLogo from "./assets/bobcat.png";
 import LoginModal from "./LoginModal";
 import LectureModal from "./LectureModal";
 import FeedbackModal from "./FeedbackModal";
+import ProfileModal from "./ProfileModal";
+import profilePicture from "./assets/trinko.jpeg";
 import "./Student.css";
 
 const Student: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLectureModal, setShowLectureModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "Tyler Rinko",
+    email: "tyler.rinko@quinnipiac.edu",
+    department: "Software Engineering",
+    bio: "Did you guys know I am an intern at Liberty Mutual!",
+    profilePicture: profilePicture,
+  });
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedLecture, setSelectedLecture] = useState<string>("");
 
@@ -16,17 +26,27 @@ const Student: React.FC = () => {
     <div className="landing-page bg-white min-vh-100">
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div className="container-fluid px-4 py-2">
-          <a className="navbar-brand fw-bold fs-5" href="#">
+          <a className="navbar-brand fw-bold fs-5" href="/">
             RateMyLectures
           </a>
-          <button
-            type="button"
-            className="btn btn-primary rounded-pill px-4"
-            onClick={() => (window.location.href = "/")}
-            style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
-          >
-            Sign Out
-          </button>
+          <div className="d-flex gap-3">
+            <button
+              type="button"
+              className="btn btn-primary rounded-pill px-2.5"
+              style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+              onClick={() => setShowProfileModal(true)}
+            >
+              <i className="bi bi-person-circle" style={{ fontSize: "1.5rem" }}></i>
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary rounded-pill px-4"
+              onClick={() => (window.location.href = "/")}
+              style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -242,6 +262,13 @@ const Student: React.FC = () => {
           setShowLectureModal(true);
         }}
         lectureTitle={selectedLecture}
+      />
+
+      <ProfileModal
+        showModal={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        profile={profile}
+        onSave={(data) => setProfile(data)}
       />
     </div>
   );
