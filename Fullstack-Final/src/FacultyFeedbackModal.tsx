@@ -56,83 +56,84 @@ const FacultyFeedbackModal: React.FC<FacultyFeedbackModalProps> = ({
             </h2>
           </div>
           <div className="modal-body px-5 py-4">
-            <div className="mb-5">
-              <h5 className="text-center mb-4">
-                Was the lesson content clear and easy to understand?
-              </h5>
-              <div className="d-flex flex-column align-items-center gap-2">
-                {feedbackData.map((feedback, index) => (
-                  <div key={index} className="d-flex gap-3">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <div
-                        key={rating}
-                        className="rounded-circle d-flex align-items-center justify-content-center"
-                        style={{
-                          width: "50px",
-                          height: "50px",
-                          backgroundColor:
-                            feedback.clarity === rating ? "#86efac" : "#d1d5db",
-                          fontWeight: "500",
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {rating}
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
+              {feedbackData.length === 0 ? (
+                <p className="text-center">No feedback submitted yet.</p>
+              ) : (
+                feedbackData.map((feedback, index) => (
+                  <div
+                    key={index}
+                    className="card mb-3"
+                    style={{ borderRadius: "12px" }}
+                  >
+                    <div className="card-body text-center">
+                      <h6 className="card-title fw-bold text-center">Feedback #{index + 1}</h6>
 
-            <div className="mb-5">
-              <h5 className="text-center mb-4">
-                Was the pace of the lesson appropriate for your understanding?
-              </h5>
-              <div className="d-flex flex-column align-items-center gap-2">
-                {feedbackData.map((feedback, index) => (
-                  <div key={index} className="d-flex gap-3">
-                    {["Too Fast", "Just Right", "Too Slow"].map((option) => (
-                      <div
-                        key={option}
-                        className="rounded-pill d-flex align-items-center justify-content-center px-4"
-                        style={{
-                          minWidth: "120px",
-                          height: "45px",
-                          backgroundColor:
-                            feedback.pace === option ? "#86efac" : "#d1d5db",
-                          fontWeight: "500",
-                          fontSize: "0.95rem",
-                        }}
-                      >
-                        {option}
+                      <div className="mb-3">
+                        <p className="mb-2 fw-semibold">
+                          Was the lesson content clear and easy to understand?
+                        </p>
+                        <div className="d-flex gap-2 justify-content-center">
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <div
+                              key={rating}
+                              className="rounded-circle d-flex align-items-center justify-content-center"
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                backgroundColor:
+                                  feedback.clarity === rating ? "#86efac" : "#d1d5db",
+                                fontWeight: 500,
+                                fontSize: "1rem",
+                              }}
+                            >
+                              {rating}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <h5 className="text-center mb-4">
-                Do you have any suggestions to improve this lesson?
-              </h5>
-              <div className="d-flex flex-column align-items-center gap-3">
-                {feedbackData
-                  .filter((f) => f.suggestion && f.suggestion.trim() !== "")
-                  .map((feedback, index) => (
-                    <div
-                      key={index}
-                      className="rounded-pill px-4 py-3"
-                      style={{
-                        backgroundColor: "#e5e7eb",
-                        maxWidth: "90%",
-                        textAlign: "center",
-                      }}
-                    >
-                      {feedback.suggestion}
+                      <div className="mb-3">
+                        <p className="mb-2 fw-semibold">
+                          Was the pace of the lesson appropriate for your understanding?
+                        </p>
+                        <div className="d-flex gap-2 justify-content-center">
+                          {["Too Fast", "Just Right", "Too Slow"].map((option) => (
+                            <div
+                              key={option}
+                              className="rounded-pill d-flex align-items-center justify-content-center px-3"
+                              style={{
+                                minWidth: "110px",
+                                height: "36px",
+                                backgroundColor:
+                                  feedback.pace === option ? "#86efac" : "#d1d5db",
+                                fontWeight: 500,
+                                fontSize: "0.95rem",
+                              }}
+                            >
+                              {option}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="mb-2 fw-semibold">Suggestions to improve this lesson</p>
+                        <div
+                          className="p-3 mx-auto"
+                          style={{ backgroundColor: "#f3f4f6", borderRadius: "8px", maxWidth: "90%" }}
+                        >
+                          {feedback.suggestion && feedback.suggestion.trim() !== "" ? (
+                            feedback.suggestion
+                          ) : (
+                            <em>No Feedback</em>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  ))}
-              </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

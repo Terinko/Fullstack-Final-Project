@@ -78,7 +78,7 @@ const FacultyAdmin: React.FC = () => {
     {
       clarity: 5,
       pace: "Too Fast",
-      suggestion: "",
+      suggestion: "No suggestions, great lecture!",
     },
   ];
 
