@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
 
 interface LoginModalProps {
   showModal: boolean;
@@ -9,69 +8,23 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [userType, setUserType] = useState<string>("Student");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
-    const loginEmail = email.toLowerCase();
-
-    try {
-      //We want to check both tables so that the user doesn't have to specify their type
-      const { data: studentData, error: studentError } = await supabase
-        .from("Student")
-        .select("*")
-        .eq("Student_Qu_Email", loginEmail + "@quinnipiac.edu")
-        .eq("Password", password)
-        .single();
-
-      if (studentData) {
-        console.log("Student logged in:", studentData);
-        resetForm();
-        onClose();
-        //Navigate to student dashboard
-        navigate("/studentdashboard");
-        return;
-      }
-
-      //Now check the admin table
-      const { data: facultyData, error: facultyError } = await supabase
-        .from("Faculty_Admin")
-        .select("*")
-        .eq("Faculty_Qu_Email", loginEmail + "@quinnipiac.edu")
-        .eq("Password", password)
-        .single();
-
-      if (facultyData) {
-        console.log("Faculty/Admin logged in:", facultyData);
-        resetForm();
-        onClose();
-        // Navigate to faculty dashboard or home
-        navigate("/facultyAdmin");
-        return;
-      }
-
-      throw new Error("Invalid email or password");
-    } catch (err: any) {
-      setError(err.message || "Invalid email or password");
-    } finally {
-      setLoading(false);
+    if (userType === "Student") {
+      console.log("Navigating to: /studentdashboard");
+      onClose();
+      navigate("/studentdashboard");
+    } else {
+      console.log("Navigating to: /facultyAdmin");
+      onClose();
+      navigate("/facultyAdmin");
     }
   };
 
-  const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setError("");
-  };
-
   const handleClose = () => {
-    resetForm();
     onClose();
   };
 
@@ -99,18 +52,27 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
           <div className="modal-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
+                <label className="form-label">Account Type</label>
+                <select
+                  className="form-select"
+                  value={userType}
+                  onChange={(e) => setUserType(e.target.value)}
+                >
+                  <option value="Student">Student</option>
+                  <option value="Faculty/Administrator">
+                    Faculty/Administrator
+                  </option>
+                </select>
+              </div>
+
+              <div className="mb-3">
                 <div className="input-group">
                   <input
                     type="text"
                     className="form-control"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value.toLowerCase())}
-                    required
                     placeholder="Quinnipiac Email"
                   />
-                  <span className="input-group-text" id="basic-addon2">
-                    @quinnipiac.edu
-                  </span>
+                  <span className="input-group-text">@quinnipiac.edu</span>
                 </div>
               </div>
 
@@ -118,26 +80,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
                 <input
                   type="password"
                   className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
                   placeholder="Password"
                 />
               </div>
 
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
-
               <div className="d-flex gap-2">
-                <button
-                  type="submit"
-                  className="btn btn-dark flex-grow-1"
-                  disabled={loading}
-                >
-                  {loading ? "Logging In..." : "Log In"}
+                <button type="submit" className="btn btn-dark flex-grow-1">
+                  Log In
                 </button>
                 <button
                   type="button"

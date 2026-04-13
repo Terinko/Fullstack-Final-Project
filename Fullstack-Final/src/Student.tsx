@@ -22,6 +22,25 @@ const Student: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedLecture, setSelectedLecture] = useState<string>("");
 
+  const courses = [
+    "Course 1",
+    "Course 2",
+    "Course 3",
+    "Course 4",
+    "Course 5",
+    "Course 6",
+    "Course 7",
+    "Course 8",
+  ];
+
+  const handleCourseClick = (courseName: string) => {
+    console.log(
+      `Navigating to: /studentdashboard/courses/${encodeURIComponent(courseName)}/lectures`,
+    );
+    setSelectedCourse(courseName);
+    setShowLectureModal(true);
+  };
+
   return (
     <div className="landing-page bg-white min-vh-100">
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
@@ -36,7 +55,10 @@ const Student: React.FC = () => {
               style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
               onClick={() => setShowProfileModal(true)}
             >
-              <i className="bi bi-person-circle" style={{ fontSize: "1.5rem" }}></i>
+              <i
+                className="bi bi-person-circle"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
             </button>
             <button
               type="button"
@@ -62,7 +84,6 @@ const Student: React.FC = () => {
                   style={{ width: "150px", height: "auto" }}
                 />
               </div>
-
               <div className="col text-center">
                 <h1
                   className="display-3 fw-bold mb-4 mx-auto"
@@ -74,7 +95,7 @@ const Student: React.FC = () => {
                   className="display-3 mb-4 mx-auto"
                   style={{ fontSize: "3rem" }}
                 >
-                  Student1's Profile
+                  Student's Dashboard
                 </h3>
               </div>
             </div>
@@ -84,155 +105,24 @@ const Student: React.FC = () => {
         <section id="courses" className="py-5">
           <div className="container">
             <h1 className="display-6 fw-bold mb-4 text-start">Courses</h1>
-
             <div className="row g-4 mb-4">
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 1");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 1</h1>
-                  </div>
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 2");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 2</h1>
-                  </div>
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 3");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 3</h1>
-                  </div>
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 4");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 4</h1>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div className="row g-4 mb-4">
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 5");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 5</h1>
-                  </div>
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 6");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 6</h1>
-                  </div>
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 7");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 7</h1>
-                  </div>
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="card border-0 h-auto bg-secondary w-100"
-                  style={{
-                    cursor: "pointer",
-                    border: "none",
-                    background: "inherit",
-                  }}
-                  onClick={() => {
-                    setSelectedCourse("Course 8");
-                    setShowLectureModal(true);
-                  }}
-                >
-                  <div className="card-body">
-                    <h1 className="fw-bold">Course 8</h1>
-                  </div>
-                </button>
-              </div>
+              {courses.map((course) => (
+                <div key={course} className="col-md-3">
+                  <button
+                    className="card border-0 h-auto bg-secondary w-100"
+                    style={{
+                      cursor: "pointer",
+                      border: "none",
+                      background: "inherit",
+                    }}
+                    onClick={() => handleCourseClick(course)}
+                  >
+                    <div className="card-body">
+                      <h1 className="fw-bold">{course}</h1>
+                    </div>
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </section>

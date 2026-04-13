@@ -29,7 +29,6 @@ const FacultyAdmin: React.FC = () => {
   });
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 
-  //Mock course data with sections - we need to replace with actual data from Supabase
   const courses: Course[] = [
     {
       courseName: "Introduction to Computer Science",
@@ -52,7 +51,6 @@ const FacultyAdmin: React.FC = () => {
     },
   ];
 
-  //Mock feedback data - we need to replace with actual data from Supabase
   const mockFeedbackData = [
     {
       clarity: 5,
@@ -64,11 +62,7 @@ const FacultyAdmin: React.FC = () => {
       pace: "Just Right",
       suggestion: "This is another example response from a different student.",
     },
-    {
-      clarity: 5,
-      pace: "Just Right",
-      suggestion: "This is a short response.",
-    },
+    { clarity: 5, pace: "Just Right", suggestion: "This is a short response." },
     {
       clarity: 3,
       pace: "Just Right",
@@ -83,6 +77,9 @@ const FacultyAdmin: React.FC = () => {
   ];
 
   const handleViewFeedback = (courseName: string, sectionCode: string) => {
+    console.log(
+      `Navigating to: /facultyAdmin/courses/${encodeURIComponent(sectionCode)}/feedback`,
+    );
     setSelectedLecture(`${courseName} - ${sectionCode}`);
     setSelectedSection(sectionCode);
     setShowFeedbackModal(true);
@@ -106,7 +103,10 @@ const FacultyAdmin: React.FC = () => {
               style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
               onClick={() => setShowProfileModal(true)}
             >
-              <i className="bi bi-person-circle" style={{ fontSize: "1.5rem" }}></i>
+              <i
+                className="bi bi-person-circle"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
             </button>
             <button
               type="button"
@@ -132,7 +132,6 @@ const FacultyAdmin: React.FC = () => {
                   style={{ width: "150px", height: "auto" }}
                 />
               </div>
-
               <div className="col text-center">
                 <h1
                   className="display-3 fw-bold mb-4 mx-auto"
@@ -154,7 +153,6 @@ const FacultyAdmin: React.FC = () => {
         <section id="courses" className="py-5">
           <div className="container">
             <h1 className="display-6 fw-bold mb-4 text-start">My Courses</h1>
-
             <div className="row g-4 mb-4">
               {courses.map((course, index) => (
                 <div key={index} className="col-12">
@@ -167,10 +165,7 @@ const FacultyAdmin: React.FC = () => {
                       >
                         <h3 className="fw-bold mb-0">{course.courseName}</h3>
                         <i
-                          className={`bi ${expandedCourse === course.courseName
-                            ? "bi-chevron-up"
-                            : "bi-chevron-down"
-                            }`}
+                          className={`bi ${expandedCourse === course.courseName ? "bi-chevron-up" : "bi-chevron-down"}`}
                           style={{ fontSize: "1.5rem" }}
                         ></i>
                       </div>
@@ -198,7 +193,7 @@ const FacultyAdmin: React.FC = () => {
                                         e.stopPropagation();
                                         handleViewFeedback(
                                           course.courseName,
-                                          section.sectionCode
+                                          section.sectionCode,
                                         );
                                       }}
                                     >
