@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import { api } from "./apiClient";
 
 interface CreatePasswordModalProps {
   showModal: boolean;
@@ -43,34 +43,10 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
     try {
       const { email, firstName, lastName, userType } = userData;
 
-      if (userType === "Student") {
-        const { error } = await supabase.from("Student").insert({
-          Student_Qu_Email: email + "@quinnipiac.edu",
-          FirstName: firstName,
-          LastName: lastName,
-          Password: password,
-          Major: "Example Major",
-        });
+      await api.post("/register", { email, firstName, lastName, userType, password });
 
-        if (error) throw error;
-
-        onClose();
-        navigate("/studentdashboard");
-      } else {
-        //Insert into Faculty Table
-        const { error } = await supabase.from("Faculty_Admin").insert({
-          Type: false,
-          Faculty_Qu_Email: email + "@quinnipiac.edu",
-          FirstName: firstName,
-          LastName: lastName,
-          Password: password,
-        });
-
-        if (error) throw error;
-
-        onClose();
-        navigate("/facultyAdmin");
-      }
+      onClose();
+      navigate(userType === "Student" ? "/studentdashboard" : "/facultyAdmin");
     } catch (err: any) {
       setError(err.message || "Failed to create account");
     } finally {
