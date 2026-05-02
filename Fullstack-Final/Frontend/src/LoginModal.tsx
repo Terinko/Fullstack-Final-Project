@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "./apiClient";
 
 interface LoginModalProps {
   showModal: boolean;
@@ -10,24 +9,18 @@ interface LoginModalProps {
 const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
   const navigate = useNavigate();
   const [userType, setUserType] = useState<string>("Student");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
-    try {
-      await api.post("/login", { email: email.toLowerCase(), userType, password });
+    if (userType === "Student") {
+      console.log("Navigating to: /studentdashboard");
       onClose();
-      navigate(userType === "Student" ? "/studentdashboard" : "/facultyAdmin");
-    } catch (err: any) {
-      setError(err.message || "Invalid email or password");
-    } finally {
-      setLoading(false);
+      navigate("/studentdashboard");
+    } else {
+      console.log("Navigating to: /facultyAdmin");
+      onClose();
+      navigate("/facultyAdmin");
     }
   };
 
@@ -78,9 +71,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
                     type="text"
                     className="form-control"
                     placeholder="Quinnipiac Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
                   />
                   <span className="input-group-text">@quinnipiac.edu</span>
                 </div>
@@ -91,21 +81,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
                   type="password"
                   className="form-control"
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
               </div>
 
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
-
               <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-dark flex-grow-1" disabled={loading}>
-                  {loading ? "Signing in..." : "Log In"}
+                <button type="submit" className="btn btn-dark flex-grow-1">
+                  Log In
                 </button>
                 <button
                   type="button"

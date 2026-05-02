@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { supabase } from "../supabaseClient";
 
 interface CreateAccountModalProps {
   showModal: boolean;
@@ -31,10 +32,29 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     const cleanEmail = email.toLowerCase();
 
     try {
+      const tableName = userType === "Student" ? "Student" : "Faculty_Admin";
+      const emailColumn =
+        userType === "Student" ? "Student_Qu_Email" : "Faculty_Qu_Email";
+
+      const { data: existingUser } = await supabase
+        .from(tableName)
+        .select("*")
+        .eq(emailColumn, cleanEmail + "@quinnipiac.edu")
+        .single();
+
+      if (existingUser) {
+        throw new Error("An account with this email already exists");
+      }
+
       onContinue({ email: cleanEmail, firstName, lastName, userType });
       resetForm();
     } catch (err: any) {
-      setError(err.message || "Failed to validate account");
+      if (err.code === "PGRST116") {
+        onContinue({ email: cleanEmail, firstName, lastName, userType });
+        resetForm();
+      } else {
+        setError(err.message || "Failed to validate account");
+      }
     } finally {
       setLoading(false);
     }
