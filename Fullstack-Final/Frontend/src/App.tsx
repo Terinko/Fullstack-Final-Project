@@ -42,14 +42,26 @@ const App: React.FC = () => {
               </li>
             </ul>
           </div>
-          <button
-            type="button"
-            className="btn btn-primary rounded-pill px-4"
-            onClick={() => setShowLoginModal(true)}
-            style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
-          >
-            Sign In
-          </button>
+
+          {/* UPDATED: Added Create Account button next to Sign In */}
+          <div className="d-flex gap-3">
+            <button
+              type="button"
+              className="btn btn-outline-primary rounded-pill px-4 fw-bold"
+              onClick={() => setShowCreateModal(true)}
+              style={{ borderColor: "#1e1b4b", color: "#1e1b4b" }}
+            >
+              Create Account
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary rounded-pill px-4"
+              onClick={() => setShowLoginModal(true)}
+              style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+            >
+              Sign In
+            </button>
+          </div>
         </div>
       </nav>
 

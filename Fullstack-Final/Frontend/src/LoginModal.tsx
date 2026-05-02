@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,22 +10,55 @@ interface LoginModalProps {
 const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
   const navigate = useNavigate();
   const [userType, setUserType] = useState<string>("Student");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    if (userType === "Student") {
-      console.log("Navigating to: /studentdashboard");
+    try {
+      const response = await fetch("http://localhost:3001/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase(),
+          password: password,
+          userType: userType === "Student" ? "Student" : "Faculty",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      // Save user identity securely
+      localStorage.setItem("userId", data.id);
+      localStorage.setItem("userType", data.userType);
+
       onClose();
-      navigate("/studentdashboard");
-    } else {
-      console.log("Navigating to: /facultyAdmin");
-      onClose();
-      navigate("/facultyAdmin");
+
+      if (data.userType === "Student") {
+        navigate("/studentdashboard");
+      } else {
+        navigate("/facultyAdmin");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
+    setEmail("");
+    setPassword("");
+    setError("");
     onClose();
   };
 
@@ -71,6 +105,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
                     type="text"
                     className="form-control"
                     placeholder="Quinnipiac Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                   <span className="input-group-text">@quinnipiac.edu</span>
                 </div>
@@ -81,12 +118,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
                   type="password"
                   className="form-control"
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
 
+              {error && (
+                <div className="alert alert-danger" role="alert">
+                  {error}
+                </div>
+              )}
+
               <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-dark flex-grow-1">
-                  Log In
+                <button
+                  type="submit"
+                  className="btn btn-dark flex-grow-1"
+                  disabled={loading}
+                >
+                  {loading ? "Logging in..." : "Log In"}
                 </button>
                 <button
                   type="button"

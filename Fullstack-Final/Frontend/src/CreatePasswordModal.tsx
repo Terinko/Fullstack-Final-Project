@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
 
 interface CreatePasswordModalProps {
   showModal: boolean;
@@ -41,38 +41,38 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
     setLoading(true);
 
     try {
-      const { email, firstName, lastName, userType } = userData;
+      const response = await fetch("http://localhost:3001/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          userType: userData.userType === "Student" ? "Student" : "Faculty",
+          password: password,
+        }),
+      });
 
-      if (userType === "Student") {
-        const { error } = await supabase.from("Student").insert({
-          Student_Qu_Email: email + "@quinnipiac.edu",
-          FirstName: firstName,
-          LastName: lastName,
-          Password: password,
-          Major: "Example Major",
-        });
+      const data = await response.json();
 
-        if (error) throw error;
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create account");
+      }
 
-        onClose();
+      // Save user info/token in localStorage to persist login
+      localStorage.setItem("userId", data.id);
+      localStorage.setItem("userType", data.userType);
+
+      onClose();
+
+      // Navigate to the correct dashboard
+      if (data.userType === "Student") {
         navigate("/studentdashboard");
       } else {
-        //Insert into Faculty Table
-        const { error } = await supabase.from("Faculty_Admin").insert({
-          Type: false,
-          Faculty_Qu_Email: email + "@quinnipiac.edu",
-          FirstName: firstName,
-          LastName: lastName,
-          Password: password,
-        });
-
-        if (error) throw error;
-
-        onClose();
         navigate("/facultyAdmin");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to create account");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,8 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
           </div>
           <div className="modal-body">
             <p className="text-muted small">
-              Creating account for <strong>{userData.email}</strong>
+              Creating account for{" "}
+              <strong>{userData.email}@quinnipiac.edu</strong>
             </p>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">

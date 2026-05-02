@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { supabase } from "../supabaseClient";
 
 interface CreateAccountModalProps {
   showModal: boolean;
@@ -21,43 +20,15 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   const [email, setEmail] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
+    // Pass the data forward to the password step.
+    // The actual API call and duplicate email check will happen there.
     const cleanEmail = email.toLowerCase();
-
-    try {
-      const tableName = userType === "Student" ? "Student" : "Faculty_Admin";
-      const emailColumn =
-        userType === "Student" ? "Student_Qu_Email" : "Faculty_Qu_Email";
-
-      const { data: existingUser } = await supabase
-        .from(tableName)
-        .select("*")
-        .eq(emailColumn, cleanEmail + "@quinnipiac.edu")
-        .single();
-
-      if (existingUser) {
-        throw new Error("An account with this email already exists");
-      }
-
-      onContinue({ email: cleanEmail, firstName, lastName, userType });
-      resetForm();
-    } catch (err: any) {
-      if (err.code === "PGRST116") {
-        onContinue({ email: cleanEmail, firstName, lastName, userType });
-        resetForm();
-      } else {
-        setError(err.message || "Failed to validate account");
-      }
-    } finally {
-      setLoading(false);
-    }
+    onContinue({ email: cleanEmail, firstName, lastName, userType });
+    resetForm();
   };
 
   const resetForm = () => {
@@ -65,7 +36,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     setEmail("");
     setFirstName("");
     setLastName("");
-    setError("");
   };
 
   const handleClose = () => {
@@ -149,19 +119,9 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                 </div>
               </div>
 
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
-
               <div className="d-flex gap-2">
-                <button
-                  type="submit"
-                  className="btn btn-dark flex-grow-1"
-                  disabled={loading}
-                >
-                  {loading ? "Checking..." : "Next: Create Password"}
+                <button type="submit" className="btn btn-dark flex-grow-1">
+                  Next: Create Password
                 </button>
                 <button
                   type="button"

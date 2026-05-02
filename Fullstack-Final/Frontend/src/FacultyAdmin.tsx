@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import bobcatLogo from "./assets/bobcat.png";
 import FacultyFeedbackModal from "./FacultyFeedbackModal";
 import ProfileModal from "./ProfileModal";
@@ -11,6 +11,7 @@ interface CourseSection {
 }
 
 interface Course {
+  _id?: string;
   courseName: string;
   sections: CourseSection[];
 }
@@ -21,35 +22,57 @@ const FacultyAdmin: React.FC = () => {
   const [selectedLecture, setSelectedLecture] = useState<string>("");
   const [, setSelectedSection] = useState<string>("");
   const [profile, setProfile] = useState({
-    name: "Alex Thimineur",
-    email: "Alexander.Thimineur@quinnipiac.edu",
-    department: "Computer Science",
-    bio: "Faculty member interested in teaching and research.",
+    name: "Loading...",
+    email: "loading@quinnipiac.edu",
+    department: "Loading...",
+    bio: "",
     profilePicture: profilePicture,
   });
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 
-  const courses: Course[] = [
-    {
-      courseName: "Introduction to Computer Science",
-      sections: [
-        { sectionName: "Section 01", sectionCode: "CS101-01" },
-        { sectionName: "Section 02", sectionCode: "CS101-02" },
-        { sectionName: "Section 03", sectionCode: "CS101-03" },
-      ],
-    },
-    {
-      courseName: "Data Structures",
-      sections: [
-        { sectionName: "Section 01", sectionCode: "CS201-01" },
-        { sectionName: "Section 02", sectionCode: "CS201-02" },
-      ],
-    },
-    {
-      courseName: "Database Systems",
-      sections: [{ sectionName: "Section 01", sectionCode: "CS301-01" }],
-    },
-  ];
+  // Initialize with an empty array. We fetch these from MongoDB now.
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      // If not logged in, boot them to the homepage
+      window.location.href = "/";
+      return;
+    }
+
+    const fetchDashboardData = async () => {
+      try {
+        // 1. Fetch Profile Data
+        const profileRes = await fetch(
+          `http://localhost:3001/api/faculty/${userId}`,
+        );
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setProfile({
+            name: `${profileData.first_name} ${profileData.last_name}`,
+            email: profileData.qu_email,
+            department: profileData.department || "Faculty Department",
+            bio: profileData.bio || "No bio added yet.",
+            profilePicture: profilePicture,
+          });
+        }
+
+        // 2. Fetch Courses populated from the database
+        const coursesRes = await fetch(
+          `http://localhost:3001/api/faculty/${userId}/courses`,
+        );
+        if (coursesRes.ok) {
+          const coursesData = await coursesRes.json();
+          setCourses(coursesData);
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const mockFeedbackData = [
     {
@@ -111,7 +134,10 @@ const FacultyAdmin: React.FC = () => {
             <button
               type="button"
               className="btn btn-primary rounded-pill px-4"
-              onClick={() => (window.location.href = "/")}
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = "/";
+              }}
               style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
             >
               Sign Out
@@ -154,62 +180,69 @@ const FacultyAdmin: React.FC = () => {
           <div className="container">
             <h1 className="display-6 fw-bold mb-4 text-start">My Courses</h1>
             <div className="row g-4 mb-4">
-              {courses.map((course, index) => (
-                <div key={index} className="col-12">
-                  <div className="card border-0 bg-light w-100">
-                    <div className="card-body">
-                      <div
-                        className="d-flex justify-content-between align-items-center"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => toggleCourse(course.courseName)}
-                      >
-                        <h3 className="fw-bold mb-0">{course.courseName}</h3>
-                        <i
-                          className={`bi ${expandedCourse === course.courseName ? "bi-chevron-up" : "bi-chevron-down"}`}
-                          style={{ fontSize: "1.5rem" }}
-                        ></i>
-                      </div>
+              {courses.length === 0 ? (
+                <p className="text-muted text-start">
+                  No courses found. Add courses in your backend to see them
+                  here.
+                </p>
+              ) : (
+                courses.map((course, index) => (
+                  <div key={index} className="col-12">
+                    <div className="card border-0 bg-light w-100">
+                      <div className="card-body">
+                        <div
+                          className="d-flex justify-content-between align-items-center"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => toggleCourse(course.courseName)}
+                        >
+                          <h3 className="fw-bold mb-0">{course.courseName}</h3>
+                          <i
+                            className={`bi ${expandedCourse === course.courseName ? "bi-chevron-up" : "bi-chevron-down"}`}
+                            style={{ fontSize: "1.5rem" }}
+                          ></i>
+                        </div>
 
-                      {expandedCourse === course.courseName && (
-                        <div className="mt-4">
-                          <div className="row g-3">
-                            {course.sections.map((section, sectionIndex) => (
-                              <div key={sectionIndex} className="col-md-4">
-                                <div className="card bg-white border">
-                                  <div className="card-body">
-                                    <h5 className="card-title">
-                                      {section.sectionName}
-                                    </h5>
-                                    <p className="text-muted small mb-3">
-                                      {section.sectionCode}
-                                    </p>
-                                    <button
-                                      className="btn btn-primary w-100"
-                                      style={{
-                                        backgroundColor: "#1e1b4b",
-                                        borderColor: "#1e1b4b",
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleViewFeedback(
-                                          course.courseName,
-                                          section.sectionCode,
-                                        );
-                                      }}
-                                    >
-                                      View Feedback
-                                    </button>
+                        {expandedCourse === course.courseName && (
+                          <div className="mt-4">
+                            <div className="row g-3">
+                              {course.sections.map((section, sectionIndex) => (
+                                <div key={sectionIndex} className="col-md-4">
+                                  <div className="card bg-white border">
+                                    <div className="card-body">
+                                      <h5 className="card-title">
+                                        {section.sectionName}
+                                      </h5>
+                                      <p className="text-muted small mb-3">
+                                        {section.sectionCode}
+                                      </p>
+                                      <button
+                                        className="btn btn-primary w-100"
+                                        style={{
+                                          backgroundColor: "#1e1b4b",
+                                          borderColor: "#1e1b4b",
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleViewFeedback(
+                                            course.courseName,
+                                            section.sectionCode,
+                                          );
+                                        }}
+                                      >
+                                        View Feedback
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </section>
