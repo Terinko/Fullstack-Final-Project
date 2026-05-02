@@ -1,7 +1,7 @@
 import express, { json } from "express";
 import { connect } from "mongoose";
 import cors from "cors";
-import { register, login } from "../../controllers/authController";
+import { register, login } from "./controllers/authController";
 import "dotenv/config";
 
 const app = express();
