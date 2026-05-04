@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const CourseSchema = new mongoose.Schema({
   name: { type: String, required: true },
   code: { type: String, required: true },
-  // FK back to the faculty member who owns this course
   faculty_id: { type: mongoose.Schema.Types.ObjectId, ref: "Faculty" },
 });
 

@@ -4,7 +4,6 @@ import LoginModal from "./LoginModal";
 import LectureModal from "./LectureModal";
 import FeedbackModal from "./FeedbackModal";
 import ProfileModal from "./ProfileModal";
-import profilePicture from "./assets/trinko.jpeg";
 import "./Student.css";
 
 interface Course {
@@ -23,7 +22,6 @@ const Student: React.FC = () => {
     email: "loading@quinnipiac.edu",
     department: "Loading...",
     bio: "",
-    profilePicture: profilePicture,
   });
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedLectureTitle, setSelectedLectureTitle] = useState<string>("");
@@ -49,7 +47,6 @@ const Student: React.FC = () => {
             email: data.qu_email,
             department: data.major || "Undecided",
             bio: "Student at Quinnipiac University",
-            profilePicture: profilePicture,
           });
         }
 
@@ -141,26 +138,53 @@ const Student: React.FC = () => {
         <section id="courses" className="py-5">
           <div className="container">
             <h1 className="display-6 fw-bold mb-4 text-start">Courses</h1>
-            <div className="row g-4 mb-4">
+            <div className="row g-4 mb-4 align-items-stretch">
               {courses.length === 0 ? (
                 <p className="text-muted text-start">
                   No courses found. Enroll in courses to see them here.
                 </p>
               ) : (
                 courses.map((course) => (
-                  <div key={course._id} className="col-md-3">
+                  <div key={course._id} className="col-md-3 d-flex">
                     <button
-                      className="card border-0 h-auto bg-secondary w-100"
+                      className="card border-0 h-100 w-100 text-start course-card"
                       style={{
                         cursor: "pointer",
-                        border: "none",
-                        background: "inherit",
+                        border: "1px solid #e0e0e0",
+                        backgroundColor: "#f8f9fa",
+                        borderRadius: "12px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+                        transition: "transform 0.2s, box-shadow 0.2s",
+                        wordBreak: "normal",
+                        overflowWrap: "normal",
+                        hyphens: "auto",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-5px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 8px 15px rgba(0, 0, 0, 0.1)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow =
+                          "0 4px 6px rgba(0, 0, 0, 0.05)";
                       }}
                       onClick={() => handleCourseClick(course)}
                     >
-                      <div className="card-body">
-                        <h1 className="fw-bold">{course.name}</h1>
-                        <p className="text-muted small mb-0">{course.code}</p>
+                      <div className="card-body d-flex flex-column w-100 p-4">
+                        <h1
+                          className="fw-bold mb-2"
+                          style={{
+                            fontSize: "1.25rem",
+                            color: "#1e1b4b",
+                            lineHeight: "1.4",
+                          }}
+                        >
+                          {course.name}
+                        </h1>
+                        <p className="text-muted fw-semibold small mt-auto mb-0">
+                          {course.code}
+                        </p>
                       </div>
                     </button>
                   </div>

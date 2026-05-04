@@ -121,25 +121,32 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-content">
-          <div className="modal-header">
+          <div className="modal-header d-flex flex-column align-items-start">
+            {/* Back Button */}
             <button
               type="button"
-              className="btn btn-link text-dark text-decoration-none"
+              className="btn btn-link text-dark text-decoration-none mb-2"
               onClick={onBack}
               style={{
-                position: "absolute",
-                left: "15px",
                 backgroundColor: "#dbdbdbff",
+                padding: "5px 15px",
+                borderRadius: "4px",
               }}
             >
               Back
             </button>
-            <h5
-              className="modal-title"
-              style={{ width: "100%", textAlign: "center" }}
-            >
-              {lectureTitle} Feedback
-            </h5>
+
+            {/* Title now sits naturally below the button */}
+            <h5 className="modal-title m-0">{lectureTitle} Feedback</h5>
+
+            {/* Standard Bootstrap close button */}
+            <button
+              type="button"
+              className="btn-close"
+              style={{ position: "absolute", right: "1rem", top: "1rem" }}
+              onClick={onClose}
+              aria-label="Close"
+            ></button>
           </div>
 
           <div className="modal-body">

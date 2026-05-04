@@ -4,9 +4,7 @@ const Lecture = require("../models/Lecture");
 exports.student_detail = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student) {
-      return res.status(404).json({ error: "Student not found" });
-    }
+    if (!student) return res.status(404).json({ error: "Student not found" });
     res.json(student);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -18,40 +16,29 @@ exports.student_courses = async (req, res) => {
     const student = await Student.findById(req.params.id).populate(
       "course_ids",
     );
-    if (!student) {
-      return res.status(404).json({ error: "Student not found" });
-    }
+    if (!student) return res.status(404).json({ error: "Student not found" });
     res.json(student.course_ids);
   } catch (err) {
-    console.error("Error fetching student courses:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 // GET /api/lectures/:lecture_id/my-feedback?student_id=...
-// Returns the calling student's existing feedback entry for a lecture, or null.
-// Used by FeedbackModal to pre-fill the form if they have already submitted.
+// Returns the student's own feedback entry for a lecture, or null.
 exports.get_my_feedback = async (req, res) => {
   try {
-    const { lecture_id } = req.params;
     const { student_id } = req.query;
-
-    if (!student_id) {
+    if (!student_id)
       return res
         .status(400)
         .json({ error: "student_id query param is required" });
-    }
 
-    const lecture = await Lecture.findById(lecture_id);
-    if (!lecture) {
-      return res.status(404).json({ error: "Lecture not found" });
-    }
+    const lecture = await Lecture.findById(req.params.lecture_id);
+    if (!lecture) return res.status(404).json({ error: "Lecture not found" });
 
     const entry = lecture.feedback.find(
       (f) => f.student_id.toString() === student_id,
     );
-
-    // Return the entry if found, or null — frontend handles both cases
     res.json(entry || null);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -59,8 +46,7 @@ exports.get_my_feedback = async (req, res) => {
 };
 
 // POST /api/feedback
-// Body: { lecture_id, student_id, clarity, pace, suggestion }
-// If the student already has a submission, replaces it in-place. Never blocks.
+// Upserts feedback — replaces if student already submitted, pushes if first time.
 exports.submit_feedback = async (req, res) => {
   try {
     const { lecture_id, student_id, clarity, pace, suggestion } = req.body;
@@ -77,18 +63,14 @@ exports.submit_feedback = async (req, res) => {
       return res.status(400).json({ error: "pace selection is required" });
 
     const lecture = await Lecture.findById(lecture_id);
-    if (!lecture) {
-      return res.status(404).json({ error: "Lecture not found" });
-    }
+    if (!lecture) return res.status(404).json({ error: "Lecture not found" });
 
     const existingIndex = lecture.feedback.findIndex(
       (f) => f.student_id.toString() === student_id,
     );
 
     let updatedLecture;
-
     if (existingIndex !== -1) {
-      // Student already submitted — replace their entry in-place using positional $set
       updatedLecture = await Lecture.findByIdAndUpdate(
         lecture_id,
         {
@@ -102,7 +84,6 @@ exports.submit_feedback = async (req, res) => {
         { new: true },
       );
     } else {
-      // First submission — push a new entry
       updatedLecture = await Lecture.findByIdAndUpdate(
         lecture_id,
         {
@@ -130,8 +111,35 @@ exports.submit_feedback = async (req, res) => {
   }
 };
 
+// PATCH /api/students/:id
+// Body: { first_name, last_name, major, bio }
 exports.student_update = async (req, res) => {
-  res.status(501).json({ message: "Not implemented yet" });
+  try {
+    const { first_name, last_name, major, bio } = req.body;
+
+    const allowedUpdates = {};
+    if (first_name !== undefined) allowedUpdates.first_name = first_name.trim();
+    if (last_name !== undefined) allowedUpdates.last_name = last_name.trim();
+    if (major !== undefined) allowedUpdates.major = major.trim();
+    if (bio !== undefined) allowedUpdates.bio = bio.trim();
+
+    if (Object.keys(allowedUpdates).length === 0) {
+      return res
+        .status(400)
+        .json({ error: "No valid fields provided to update." });
+    }
+
+    const updated = await Student.findByIdAndUpdate(
+      req.params.id,
+      { $set: allowedUpdates },
+      { new: true, runValidators: true },
+    );
+
+    if (!updated) return res.status(404).json({ error: "Student not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.student_delete = async (req, res) => {

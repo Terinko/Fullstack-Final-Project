@@ -7,7 +7,7 @@ const StudentSchema = new mongoose.Schema(
     last_name: { type: String, required: true, maxLength: 100 },
     password_hash: { type: String, required: true },
     major: { type: String, default: "" },
-    // Changed from section_ids -> Section (removed) to course_ids -> Course
+    bio: { type: String, default: "" },
     course_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
   },
   { timestamps: true },
