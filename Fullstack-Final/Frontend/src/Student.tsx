@@ -7,6 +7,12 @@ import ProfileModal from "./ProfileModal";
 import profilePicture from "./assets/trinko.jpeg";
 import "./Student.css";
 
+interface Course {
+  _id: string;
+  name: string;
+  code: string;
+}
+
 const Student: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLectureModal, setShowLectureModal] = useState(false);
@@ -19,23 +25,22 @@ const Student: React.FC = () => {
     bio: "",
     profilePicture: profilePicture,
   });
-  const [selectedCourse, setSelectedCourse] = useState<string>("");
-  const [selectedLecture, setSelectedLecture] = useState<string>("");
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedLectureTitle, setSelectedLectureTitle] = useState<string>("");
+  const [selectedLectureId, setSelectedLectureId] = useState<string>("");
 
-  // Initialize as empty. Will be populated from MongoDB.
-  const [courses, setCourses] = useState<string[]>([]);
+  // Full course objects from MongoDB
+  const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
-      // Boot back to the homepage if a valid user identity is not found
       window.location.href = "/";
       return;
     }
 
     const fetchStudentData = async () => {
       try {
-        // 1. Fetch Student Profile
         const res = await fetch(`http://localhost:3001/api/students/${userId}`);
         if (res.ok) {
           const data = await res.json();
@@ -48,7 +53,7 @@ const Student: React.FC = () => {
           });
         }
 
-        // 2. Fetch Student Courses
+        // Returns full course objects: [{ _id, name, code }]
         const coursesRes = await fetch(
           `http://localhost:3001/api/students/${userId}/courses`,
         );
@@ -64,11 +69,8 @@ const Student: React.FC = () => {
     fetchStudentData();
   }, []);
 
-  const handleCourseClick = (courseName: string) => {
-    console.log(
-      `Navigating to: /studentdashboard/courses/${encodeURIComponent(courseName)}/lectures`,
-    );
-    setSelectedCourse(courseName);
+  const handleCourseClick = (course: Course) => {
+    setSelectedCourse(course);
     setShowLectureModal(true);
   };
 
@@ -142,12 +144,11 @@ const Student: React.FC = () => {
             <div className="row g-4 mb-4">
               {courses.length === 0 ? (
                 <p className="text-muted text-start">
-                  No courses found. Add courses in your backend to see them
-                  here.
+                  No courses found. Enroll in courses to see them here.
                 </p>
               ) : (
                 courses.map((course) => (
-                  <div key={course} className="col-md-3">
+                  <div key={course._id} className="col-md-3">
                     <button
                       className="card border-0 h-auto bg-secondary w-100"
                       style={{
@@ -158,7 +159,8 @@ const Student: React.FC = () => {
                       onClick={() => handleCourseClick(course)}
                     >
                       <div className="card-body">
-                        <h1 className="fw-bold">{course}</h1>
+                        <h1 className="fw-bold">{course.name}</h1>
+                        <p className="text-muted small mb-0">{course.code}</p>
                       </div>
                     </button>
                   </div>
@@ -177,12 +179,20 @@ const Student: React.FC = () => {
       <LectureModal
         showModal={showLectureModal}
         onClose={() => setShowLectureModal(false)}
-        onContinue={(lecture) => {
-          setSelectedLecture(lecture);
+        onContinue={(lectureTitle, lectureId) => {
+          if (!lectureId) {
+            console.error(
+              "LectureModal returned no lectureId — check that lectures exist for this course.",
+            );
+            return;
+          }
+          setSelectedLectureTitle(lectureTitle);
+          setSelectedLectureId(lectureId);
           setShowLectureModal(false);
           setShowFeedbackModal(true);
         }}
-        courseName={selectedCourse}
+        courseName={selectedCourse?.name ?? ""}
+        courseId={selectedCourse?._id ?? ""}
       />
 
       <FeedbackModal
@@ -192,7 +202,8 @@ const Student: React.FC = () => {
           setShowFeedbackModal(false);
           setShowLectureModal(true);
         }}
-        lectureTitle={selectedLecture}
+        lectureTitle={selectedLectureTitle}
+        lectureId={selectedLectureId}
       />
 
       <ProfileModal

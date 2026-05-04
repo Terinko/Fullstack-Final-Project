@@ -1,24 +1,38 @@
 const express = require("express");
 const router = express.Router();
 
-const auth_controller = require("../controllers/authController");
-const student_controller = require("../controllers/studentController");
-const faculty_controller = require("../controllers/facultyController");
+const authController = require("../controllers/authController");
+const facultyController = require("../controllers/facultyController");
+const studentController = require("../controllers/studentController");
 
-// Auth Routes
-router.post("/register", auth_controller.register);
-router.post("/login", auth_controller.login);
+// Auth
+router.post("/register", authController.register);
+router.post("/login", authController.login);
 
-// Student Routes
-router.get("/students/:id", student_controller.student_detail);
-router.get("/students/:id/courses", student_controller.student_courses); // <-- NEW ROUTE
-router.put("/students/:id", student_controller.student_update);
-router.delete("/students/:id", student_controller.student_delete);
+// Faculty
+router.get("/faculty/:id", facultyController.faculty_detail);
+router.get("/faculty/:id/courses", facultyController.faculty_courses);
 
-// Faculty Routes
-router.get("/faculty/:id", faculty_controller.faculty_detail);
-router.put("/faculty/:id", faculty_controller.faculty_update);
-router.delete("/faculty/:id", faculty_controller.faculty_delete);
-router.get("/faculty/:id/courses", faculty_controller.faculty_courses);
+// Courses & Lectures
+router.get("/courses/:courseId/lectures", facultyController.course_lectures);
+router.post("/courses/:courseId/lectures", facultyController.create_lecture);
+
+// Lecture Feedback
+// Faculty: view all feedback for a lecture
+router.get(
+  "/lectures/:lecture_id/feedback",
+  facultyController.view_lecture_feedback,
+);
+// Student: fetch their own existing feedback entry (used to pre-fill the form)
+router.get(
+  "/lectures/:lecture_id/my-feedback",
+  studentController.get_my_feedback,
+);
+// Student: submit or update feedback
+router.post("/feedback", studentController.submit_feedback);
+
+// Students
+router.get("/students/:id", studentController.student_detail);
+router.get("/students/:id/courses", studentController.student_courses);
 
 module.exports = router;

@@ -13,4 +13,6 @@ var StudentSchema = Schema(
   { timestamps: true },
 );
 
+router.post("/lecture/feedback", studentController.submit_feedback);
+
 module.exports = mongoose.model("Student", StudentSchema);

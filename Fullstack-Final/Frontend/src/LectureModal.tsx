@@ -1,98 +1,142 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+interface Lecture {
+  _id: string;
+  title: string;
+  lecture_number: number;
+  date: string;
+}
 
 interface LectureModalProps {
-    showModal: boolean;
-    onClose: () => void;
-    onContinue: (lecture: string) => void;
-    courseName: string;
+  showModal: boolean;
+  onClose: () => void;
+  // Now passes both the display title and the lecture _id so FeedbackModal can POST correctly
+  onContinue: (lectureTitle: string, lectureId: string) => void;
+  courseName: string;
+  courseId: string; // NEW: needed to fetch lectures from /api/courses/:courseId/lectures
 }
 
 const LectureModal: React.FC<LectureModalProps> = ({
-    showModal,
-    onClose,
-    onContinue,
-    courseName,
+  showModal,
+  onClose,
+  onContinue,
+  courseName,
+  courseId,
 }) => {
-    const [selectedLecture, setSelectedLecture] = useState<string>("");
+  const [selectedLectureId, setSelectedLectureId] = useState<string>("");
+  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    // Mock lecture data - replace with actual data from API
-    const lectures = [
-        "Lecture 1",
-        "Lecture 2",
-        "Lecture 3",
-        "Lecture 4",
-        "Lecture 5",
-    ];
+  useEffect(() => {
+    if (!showModal || !courseId) return;
 
-    const handleContinue = () => {
-        if (selectedLecture) {
-            console.log(`Selected: ${courseName} - ${selectedLecture}`);
-            onContinue(selectedLecture);
-            setSelectedLecture("");
+    const fetchLectures = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `http://localhost:3001/api/courses/${courseId}/lectures`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setLectures(data);
         }
+      } catch (err) {
+        console.error("Error fetching lectures:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (!showModal) return null;
+    fetchLectures();
+  }, [showModal, courseId]);
 
-    return (
-        <div
-            className="modal fade show d-block"
-            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-            onClick={onClose}
-        >
-            <div
-                className="modal-dialog modal-dialog-centered"
-                onClick={(e) => e.stopPropagation()}
+  const handleContinue = () => {
+    const selected = lectures.find((l) => l._id === selectedLectureId);
+    if (selected) {
+      onContinue(
+        `${courseName} — Lecture ${selected.lecture_number}: ${selected.title}`,
+        selected._id,
+      );
+      setSelectedLectureId("");
+    }
+  };
+
+  if (!showModal) return null;
+
+  return (
+    <div
+      className="modal fade show d-block"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      onClick={onClose}
+    >
+      <div
+        className="modal-dialog modal-dialog-centered"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-content">
+          <div className="modal-header">
+            <button
+              type="button"
+              className="btn btn-link text-dark text-decoration-none"
+              onClick={onClose}
+              style={{
+                position: "absolute",
+                left: "15px",
+                backgroundColor: "#dbdbdbff",
+              }}
             >
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <button
-                            type="button"
-                            className="btn btn-link text-dark text-decoration-none"
-                            onClick={onClose}
-                            style={{ position: "absolute", left: "15px", backgroundColor: "#dbdbdbff" }}
-                        >
-                            Back
-                        </button>
-                        <h5 className="modal-title" style={{ width: "100%", textAlign: "center" }}>
-                            Select Lecture
-                        </h5>
-                    </div>
-                    <div className="modal-body">
-                        <div className="mb-3">
-                            <label htmlFor="lectureSelect" className="form-label">
-                                {courseName}
-                            </label>
-                            <select
-                                id="lectureSelect"
-                                className="form-select"
-                                value={selectedLecture}
-                                onChange={(e) => setSelectedLecture(e.target.value)}
-                            >
-                                <option value="">Choose a lecture...</option>
-                                {lectures.map((lecture, index) => (
-                                    <option key={index} value={lecture}>
-                                        {lecture}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                    <div className="modal-footer">
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={handleContinue}
-                            disabled={!selectedLecture}
-                            style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
-                        >
-                            Continue
-                        </button>
-                    </div>
-                </div>
+              Back
+            </button>
+            <h5
+              className="modal-title"
+              style={{ width: "100%", textAlign: "center" }}
+            >
+              Select Lecture
+            </h5>
+          </div>
+          <div className="modal-body">
+            <div className="mb-3">
+              <label htmlFor="lectureSelect" className="form-label">
+                {courseName}
+              </label>
+              {loading ? (
+                <p className="text-muted">Loading lectures...</p>
+              ) : lectures.length === 0 ? (
+                <p className="text-muted">
+                  No lectures available for this course yet.
+                </p>
+              ) : (
+                <select
+                  id="lectureSelect"
+                  className="form-select"
+                  value={selectedLectureId}
+                  onChange={(e) => setSelectedLectureId(e.target.value)}
+                >
+                  <option value="">Choose a lecture...</option>
+                  {lectures.map((lecture) => (
+                    <option key={lecture._id} value={lecture._id}>
+                      Lecture {lecture.lecture_number}: {lecture.title}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
+          </div>
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleContinue}
+              disabled={!selectedLectureId}
+              style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+            >
+              Continue
+            </button>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default LectureModal;
