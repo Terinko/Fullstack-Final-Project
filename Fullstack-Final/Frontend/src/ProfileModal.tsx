@@ -1,18 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const profileSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  department: z.string().min(1, "This field is required"),
+  email: z.string(),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export interface ProfileData {
   firstName: string;
   lastName: string;
-  name?: string; // Kept for backwards compatibility if the parent still passes 'name'
+  name?: string;
   email: string;
-  department: string; // faculty: department name / student: major
+  department: string;
 }
 
 interface ProfileModalProps {
   showModal: boolean;
   onClose: () => void;
-  profile?: Partial<ProfileData>; // Allow partial data to come from the parent
+  profile?: Partial<ProfileData>;
   onSave?: (data: ProfileData) => void;
 }
 
@@ -23,14 +34,12 @@ const defaultData: ProfileData = {
   department: "",
 };
 
-// Smart initializer to handle both the new format and the legacy "name" string format
 const initializeData = (p?: Partial<ProfileData>): ProfileData => {
   if (!p) return defaultData;
 
   let fName = p.firstName || "";
   let lName = p.lastName || "";
 
-  // If the parent component passed the old single 'name' string, split it up
   if (!fName && !lName && p.name) {
     const nameParts = p.name.trim().split(" ");
     fName = nameParts[0] ?? "";
@@ -52,55 +61,65 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   onSave,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-
-  // Initialize state immediately so it renders correctly on the very first paint
   const [profileData, setProfileData] = useState<ProfileData>(() =>
     initializeData(profile),
   );
-  const [editData, setEditData] = useState<ProfileData>(() =>
-    initializeData(profile),
-  );
+  const [apiError, setApiError] = useState("");
 
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
-
-  const userType = localStorage.getItem("userType"); // "Faculty" | "Student"
+  const userType = localStorage.getItem("userType");
   const userId = localStorage.getItem("userId");
   const isFaculty = userType === "Faculty";
+  const deptLabel = isFaculty ? "Department" : "Major";
 
-  // Sync state if the parent component updates the 'profile' prop after mounting
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: profileData,
+  });
+
+  // Stringify the profile to prevent unnecessary resets if the parent
+  // re-renders but the actual data hasn't changed.
+  const profileString = JSON.stringify(profile);
+
   useEffect(() => {
     const incoming = initializeData(profile);
     setProfileData(incoming);
-    setEditData(incoming);
-  }, [profile]);
 
-  const handleEditClick = () => {
-    setSaveError("");
+    // Only reset the form if the user isn't actively editing
+    if (!isEditing) {
+      reset(incoming);
+    }
+  }, [profileString, reset, isEditing, profile]);
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setApiError("");
     setIsEditing(true);
-    setEditData(profileData); // Pre-fill edit inputs with the current profile data
+    reset(profileData);
   };
 
-  const handleSaveClick = async () => {
+  const onSubmit = async (data: ProfileFormData) => {
     if (!userId) {
-      setSaveError("Not logged in — please sign in again.");
+      setApiError("Not logged in — please sign in again.");
       return;
     }
 
-    setSaving(true);
-    setSaveError("");
+    setApiError("");
 
-    // Build the body using the explicitly separated first and last names
     const body = isFaculty
       ? {
-          first_name: editData.firstName.trim(),
-          last_name: editData.lastName.trim(),
-          department: editData.department,
+          first_name: data.firstName.trim(),
+          last_name: data.lastName.trim(),
+          department: data.department.trim(),
         }
       : {
-          first_name: editData.firstName.trim(),
-          last_name: editData.lastName.trim(),
-          major: editData.department,
+          first_name: data.firstName.trim(),
+          last_name: data.lastName.trim(),
+          major: data.department.trim(),
         };
 
     const url = isFaculty
@@ -113,45 +132,34 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
+      const resData = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Failed to save profile.");
+      if (!res.ok) throw new Error(resData.error || "Failed to save profile.");
 
-      // Reconstruct the local profile from the saved document
       const saved: ProfileData = {
-        firstName: data.first_name || "",
-        lastName: data.last_name || "",
-        email: data.qu_email,
-        department: isFaculty ? data.department || "" : data.major || "",
+        firstName: resData.first_name || "",
+        lastName: resData.last_name || "",
+        email: resData.qu_email,
+        department: isFaculty ? resData.department || "" : resData.major || "",
       };
 
       setProfileData(saved);
-      setEditData(saved);
       setIsEditing(false);
       if (onSave) onSave(saved);
-    } catch (err: any) {
-      setSaveError(err.message);
-    } finally {
-      setSaving(false);
+    } catch (err) {
+      setApiError(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
     }
   };
 
   const handleCancelClick = () => {
     setIsEditing(false);
-    setSaveError("");
-    setEditData(profileData); // Reset the edit form back to the original data
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setEditData({ ...editData, [name]: value });
+    setApiError("");
+    reset(profileData);
   };
 
   if (!showModal) return null;
-
-  const deptLabel = isFaculty ? "Department" : "Major";
 
   return (
     <div
@@ -170,10 +178,13 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             />
           </div>
 
-          <div className="modal-body">
-            <div className="mb-4">
-              {isEditing ? (
-                <>
+          {/* CRITICAL FIX: We conditionally render the form tags so the 
+            "Edit Profile" button is NEVER inside a form element.
+          */}
+          {isEditing ? (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="modal-body">
+                <div className="mb-4">
                   <div className="row mb-3">
                     <div className="col">
                       <label className="form-label text-muted small mb-1">
@@ -181,12 +192,15 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                       </label>
                       <input
                         type="text"
-                        className="form-control"
-                        name="firstName"
-                        value={editData.firstName}
-                        onChange={handleInputChange}
+                        className={`form-control ${errors.firstName ? "is-invalid" : ""}`}
                         placeholder="First Name"
+                        {...register("firstName")}
                       />
+                      {errors.firstName && (
+                        <div className="invalid-feedback">
+                          {errors.firstName.message}
+                        </div>
+                      )}
                     </div>
                     <div className="col">
                       <label className="form-label text-muted small mb-1">
@@ -194,12 +208,15 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                       </label>
                       <input
                         type="text"
-                        className="form-control"
-                        name="lastName"
-                        value={editData.lastName}
-                        onChange={handleInputChange}
+                        className={`form-control ${errors.lastName ? "is-invalid" : ""}`}
                         placeholder="Last Name"
+                        {...register("lastName")}
                       />
+                      {errors.lastName && (
+                        <div className="invalid-feedback">
+                          {errors.lastName.message}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -210,13 +227,13 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     <input
                       type="email"
                       className="form-control"
-                      value={editData.email}
                       disabled
                       title="Email cannot be changed"
                       style={{
                         backgroundColor: "#f8f9fa",
                         cursor: "not-allowed",
                       }}
+                      {...register("email")}
                     />
                     <div className="form-text">Email cannot be changed.</div>
                   </div>
@@ -227,25 +244,54 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     </label>
                     <input
                       type="text"
-                      className="form-control"
-                      name="department"
-                      value={editData.department}
-                      onChange={handleInputChange}
+                      className={`form-control ${errors.department ? "is-invalid" : ""}`}
                       placeholder={deptLabel}
+                      {...register("department")}
                     />
+                    {errors.department && (
+                      <div className="invalid-feedback">
+                        {errors.department.message}
+                      </div>
+                    )}
                   </div>
 
-                  {saveError && (
+                  {apiError && (
                     <div
                       className="alert alert-danger py-2"
                       style={{ fontSize: "0.875rem" }}
                     >
-                      {saveError}
+                      {apiError}
                     </div>
                   )}
-                </>
-              ) : (
-                <>
+                </div>
+              </div>
+
+              <div className="modal-footer bg-light">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleCancelClick}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{
+                    backgroundColor: "#1e1b4b",
+                    borderColor: "#1e1b4b",
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div className="modal-body">
+                <div className="mb-4">
                   <div className="mb-3">
                     <p className="text-muted small mb-1">Name</p>
                     <p className="fw-bold">
@@ -260,34 +306,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     <p className="text-muted small mb-1">{deptLabel}</p>
                     <p className="fw-bold">{profileData.department || "—"}</p>
                   </div>
-                </>
-              )}
-            </div>
-          </div>
+                </div>
+              </div>
 
-          <div className="modal-footer bg-light">
-            {isEditing ? (
-              <>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCancelClick}
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
-                  onClick={handleSaveClick}
-                  disabled={saving}
-                >
-                  {saving ? "Saving..." : "Save Changes"}
-                </button>
-              </>
-            ) : (
-              <>
+              <div className="modal-footer bg-light">
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -298,14 +320,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                 <button
                   type="button"
                   className="btn btn-primary"
-                  style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
+                  style={{
+                    backgroundColor: "#1e1b4b",
+                    borderColor: "#1e1b4b",
+                  }}
                   onClick={handleEditClick}
                 >
                   Edit Profile
                 </button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

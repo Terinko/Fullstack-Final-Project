@@ -1,6 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const passwordSchema = z
+  .object({
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type PasswordFormData = z.infer<typeof passwordSchema>;
 
 interface CreatePasswordModalProps {
   showModal: boolean;
@@ -19,26 +33,18 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
   userData,
 }) => {
   const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<PasswordFormData>({
+    resolver: zodResolver(passwordSchema),
+  });
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    setLoading(true);
+  const onSubmit = async (data: PasswordFormData) => {
+    setApiError("");
 
     try {
       const response = await fetch("http://localhost:3001/api/register", {
@@ -49,32 +55,30 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
           firstName: userData.firstName,
           lastName: userData.lastName,
           userType: userData.userType === "Student" ? "Student" : "Faculty",
-          password: password,
+          password: data.password,
         }),
       });
 
-      const data = await response.json();
+      const resData = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create account");
+        throw new Error(resData.error || "Failed to create account");
       }
 
-      // Save user info/token in localStorage to persist login
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("userType", data.userType);
+      localStorage.setItem("userId", resData.id);
+      localStorage.setItem("userType", resData.userType);
 
       onClose();
 
-      // Navigate to the correct dashboard
-      if (data.userType === "Student") {
+      if (resData.userType === "Student") {
         navigate("/studentdashboard");
       } else {
         navigate("/facultyAdmin");
       }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      setApiError(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
     }
   };
 
@@ -100,32 +104,38 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
               Creating account for{" "}
               <strong>{userData.email}@quinnipiac.edu</strong>
             </p>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-3">
                 <input
                   type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  className={`form-control ${errors.password ? "is-invalid" : ""}`}
                   placeholder="Password"
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <div className="invalid-feedback">
+                    {errors.password.message}
+                  </div>
+                )}
               </div>
 
               <div className="mb-3">
                 <input
                   type="password"
-                  className="form-control"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
+                  className={`form-control ${errors.confirmPassword ? "is-invalid" : ""}`}
                   placeholder="Confirm Password"
+                  {...register("confirmPassword")}
                 />
+                {errors.confirmPassword && (
+                  <div className="invalid-feedback">
+                    {errors.confirmPassword.message}
+                  </div>
+                )}
               </div>
 
-              {error && (
+              {apiError && (
                 <div className="alert alert-danger" role="alert">
-                  {error}
+                  {apiError}
                 </div>
               )}
 
@@ -133,9 +143,9 @@ const CreatePasswordModal: React.FC<CreatePasswordModalProps> = ({
                 type="submit"
                 className="btn btn-primary w-100"
                 style={{ backgroundColor: "#1e1b4b", borderColor: "#1e1b4b" }}
-                disabled={loading}
+                disabled={isSubmitting}
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {isSubmitting ? "Creating Account..." : "Create Account"}
               </button>
             </form>
           </div>

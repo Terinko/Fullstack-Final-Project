@@ -1,6 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const loginSchema = z.object({
+  userType: z.enum(["Student", "Faculty/Administrator"]),
+  email: z.string().min(1, "Email prefix is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginModalProps {
   showModal: boolean;
@@ -9,56 +19,62 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<string>("Student");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      userType: "Student",
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setApiError("");
 
     try {
       const response = await fetch("http://localhost:3001/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email.toLowerCase(),
-          password: password,
-          userType: userType === "Student" ? "Student" : "Faculty",
+          email: data.email.toLowerCase(),
+          password: data.password,
+          userType: data.userType === "Student" ? "Student" : "Faculty",
         }),
       });
 
-      const data = await response.json();
+      const resData = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(resData.error || "Login failed");
       }
 
-      // Save user identity securely
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("userType", data.userType);
+      localStorage.setItem("userId", resData.id);
+      localStorage.setItem("userType", resData.userType);
 
-      onClose();
+      handleClose();
 
-      if (data.userType === "Student") {
+      if (resData.userType === "Student") {
         navigate("/studentdashboard");
       } else {
         navigate("/facultyAdmin");
       }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      setApiError(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
     }
   };
 
   const handleClose = () => {
-    setEmail("");
-    setPassword("");
-    setError("");
+    reset();
+    setApiError("");
     onClose();
   };
 
@@ -84,49 +100,59 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
             ></button>
           </div>
           <div className="modal-body">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-3">
                 <label className="form-label">Account Type</label>
                 <select
-                  className="form-select"
-                  value={userType}
-                  onChange={(e) => setUserType(e.target.value)}
+                  className={`form-select ${errors.userType ? "is-invalid" : ""}`}
+                  {...register("userType")}
                 >
                   <option value="Student">Student</option>
                   <option value="Faculty/Administrator">
                     Faculty/Administrator
                   </option>
                 </select>
+                {errors.userType && (
+                  <div className="invalid-feedback">
+                    {errors.userType.message}
+                  </div>
+                )}
               </div>
 
               <div className="mb-3">
-                <div className="input-group">
+                <div className="input-group has-validation">
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errors.email ? "is-invalid" : ""}`}
                     placeholder="Quinnipiac Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...register("email")}
                   />
                   <span className="input-group-text">@quinnipiac.edu</span>
+                  {errors.email && (
+                    <div className="invalid-feedback">
+                      {errors.email.message}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="mb-3">
                 <input
                   type="password"
-                  className="form-control"
+                  className={`form-control ${errors.password ? "is-invalid" : ""}`}
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <div className="invalid-feedback">
+                    {errors.password.message}
+                  </div>
+                )}
               </div>
 
-              {error && (
+              {apiError && (
                 <div className="alert alert-danger" role="alert">
-                  {error}
+                  {apiError}
                 </div>
               )}
 
@@ -134,9 +160,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
                 <button
                   type="submit"
                   className="btn btn-dark flex-grow-1"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 >
-                  {loading ? "Logging in..." : "Log In"}
+                  {isSubmitting ? "Logging in..." : "Log In"}
                 </button>
                 <button
                   type="button"
