@@ -2,18 +2,48 @@
 import React, { useState, useEffect } from "react";
 
 export interface ProfileData {
-  name: string;
+  firstName: string;
+  lastName: string;
+  name?: string; // Kept for backwards compatibility if the parent still passes 'name'
   email: string;
   department: string; // faculty: department name / student: major
-  bio: string;
 }
 
 interface ProfileModalProps {
   showModal: boolean;
   onClose: () => void;
-  profile?: ProfileData;
+  profile?: Partial<ProfileData>; // Allow partial data to come from the parent
   onSave?: (data: ProfileData) => void;
 }
+
+const defaultData: ProfileData = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  department: "",
+};
+
+// Smart initializer to handle both the new format and the legacy "name" string format
+const initializeData = (p?: Partial<ProfileData>): ProfileData => {
+  if (!p) return defaultData;
+
+  let fName = p.firstName || "";
+  let lName = p.lastName || "";
+
+  // If the parent component passed the old single 'name' string, split it up
+  if (!fName && !lName && p.name) {
+    const nameParts = p.name.trim().split(" ");
+    fName = nameParts[0] ?? "";
+    lName = nameParts.slice(1).join(" ") || "";
+  }
+
+  return {
+    firstName: fName,
+    lastName: lName,
+    email: p.email || "",
+    department: p.department || "",
+  };
+};
 
 const ProfileModal: React.FC<ProfileModalProps> = ({
   showModal,
@@ -21,18 +51,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   profile,
   onSave,
 }) => {
-  const defaultData: ProfileData = {
-    name: "",
-    email: "",
-    department: "",
-    bio: "",
-  };
-
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData>(
-    profile ?? defaultData,
+
+  // Initialize state immediately so it renders correctly on the very first paint
+  const [profileData, setProfileData] = useState<ProfileData>(() =>
+    initializeData(profile),
   );
-  const [editData, setEditData] = useState<ProfileData>(profile ?? defaultData);
+  const [editData, setEditData] = useState<ProfileData>(() =>
+    initializeData(profile),
+  );
+
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
@@ -40,8 +68,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   const userId = localStorage.getItem("userId");
   const isFaculty = userType === "Faculty";
 
+  // Sync state if the parent component updates the 'profile' prop after mounting
   useEffect(() => {
-    const incoming = profile ?? defaultData;
+    const incoming = initializeData(profile);
     setProfileData(incoming);
     setEditData(incoming);
   }, [profile]);
@@ -49,7 +78,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   const handleEditClick = () => {
     setSaveError("");
     setIsEditing(true);
-    setEditData(profileData);
+    setEditData(profileData); // Pre-fill edit inputs with the current profile data
   };
 
   const handleSaveClick = async () => {
@@ -61,24 +90,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     setSaving(true);
     setSaveError("");
 
-    // Split "First Last" back into first_name / last_name
-    const nameParts = editData.name.trim().split(" ");
-    const first_name = nameParts[0] ?? "";
-    const last_name = nameParts.slice(1).join(" ") || first_name;
-
-    // Build the body — faculty sends department, student sends major
+    // Build the body using the explicitly separated first and last names
     const body = isFaculty
       ? {
-          first_name,
-          last_name,
+          first_name: editData.firstName.trim(),
+          last_name: editData.lastName.trim(),
           department: editData.department,
-          bio: editData.bio,
         }
       : {
-          first_name,
-          last_name,
+          first_name: editData.firstName.trim(),
+          last_name: editData.lastName.trim(),
           major: editData.department,
-          bio: editData.bio,
         };
 
     const url = isFaculty
@@ -97,10 +119,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
       // Reconstruct the local profile from the saved document
       const saved: ProfileData = {
-        name: `${data.first_name} ${data.last_name}`,
+        firstName: data.first_name || "",
+        lastName: data.last_name || "",
         email: data.qu_email,
         department: isFaculty ? data.department || "" : data.major || "",
-        bio: data.bio || "",
       };
 
       setProfileData(saved);
@@ -117,7 +139,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   const handleCancelClick = () => {
     setIsEditing(false);
     setSaveError("");
-    setEditData(profileData);
+    setEditData(profileData); // Reset the edit form back to the original data
   };
 
   const handleInputChange = (
@@ -129,7 +151,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
   if (!showModal) return null;
 
-  // Label changes based on role
   const deptLabel = isFaculty ? "Department" : "Major";
 
   return (
@@ -153,18 +174,33 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="mb-4">
               {isEditing ? (
                 <>
-                  <div className="mb-3">
-                    <label className="form-label text-muted small mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="name"
-                      value={editData.name}
-                      onChange={handleInputChange}
-                      placeholder="Full Name"
-                    />
+                  <div className="row mb-3">
+                    <div className="col">
+                      <label className="form-label text-muted small mb-1">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="firstName"
+                        value={editData.firstName}
+                        onChange={handleInputChange}
+                        placeholder="First Name"
+                      />
+                    </div>
+                    <div className="col">
+                      <label className="form-label text-muted small mb-1">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="lastName"
+                        value={editData.lastName}
+                        onChange={handleInputChange}
+                        placeholder="Last Name"
+                      />
+                    </div>
                   </div>
 
                   <div className="mb-3">
@@ -199,20 +235,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     />
                   </div>
 
-                  <div className="mb-3">
-                    <label className="form-label text-muted small mb-1">
-                      Biography
-                    </label>
-                    <textarea
-                      className="form-control"
-                      name="bio"
-                      value={editData.bio}
-                      onChange={handleInputChange}
-                      rows={3}
-                      placeholder="A short bio..."
-                    />
-                  </div>
-
                   {saveError && (
                     <div
                       className="alert alert-danger py-2"
@@ -226,7 +248,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                 <>
                   <div className="mb-3">
                     <p className="text-muted small mb-1">Name</p>
-                    <p className="fw-bold">{profileData.name || "—"}</p>
+                    <p className="fw-bold">
+                      {profileData.firstName} {profileData.lastName}
+                    </p>
                   </div>
                   <div className="mb-3">
                     <p className="text-muted small mb-1">Email</p>
@@ -235,10 +259,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                   <div className="mb-3">
                     <p className="text-muted small mb-1">{deptLabel}</p>
                     <p className="fw-bold">{profileData.department || "—"}</p>
-                  </div>
-                  <div className="mb-3">
-                    <p className="text-muted small mb-1">Biography</p>
-                    <p className="fw-bold">{profileData.bio || "—"}</p>
                   </div>
                 </>
               )}

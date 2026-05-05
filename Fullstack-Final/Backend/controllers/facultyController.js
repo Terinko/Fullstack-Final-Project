@@ -13,17 +13,16 @@ exports.faculty_detail = async (req, res) => {
 };
 
 // PATCH /api/faculty/:id
-// Body: { first_name, last_name, department, bio }
+// Body: { first_name, last_name, department }
 // Only the four editable profile fields — email and password are not changed here.
 exports.faculty_update = async (req, res) => {
   try {
-    const { first_name, last_name, department, bio } = req.body;
+    const { first_name, last_name, department } = req.body;
 
     const allowedUpdates = {};
     if (first_name !== undefined) allowedUpdates.first_name = first_name.trim();
     if (last_name !== undefined) allowedUpdates.last_name = last_name.trim();
     if (department !== undefined) allowedUpdates.department = department.trim();
-    if (bio !== undefined) allowedUpdates.bio = bio.trim();
 
     if (Object.keys(allowedUpdates).length === 0) {
       return res

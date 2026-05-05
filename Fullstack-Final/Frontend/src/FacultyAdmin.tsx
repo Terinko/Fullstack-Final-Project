@@ -34,7 +34,6 @@ const FacultyAdmin: React.FC = () => {
     name: "Loading...",
     email: "loading@quinnipiac.edu",
     department: "Loading...",
-    bio: "",
     profilePicture: profilePicture,
   });
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
@@ -63,7 +62,6 @@ const FacultyAdmin: React.FC = () => {
             name: `${profileData.first_name} ${profileData.last_name}`,
             email: profileData.qu_email,
             department: profileData.department || "Faculty Department",
-            bio: profileData.bio || "No bio added yet.",
             profilePicture: profilePicture,
           });
         }

@@ -34,9 +34,9 @@ mongoose
 
     // ── 3. Create Faculty ──────────────────────────────────────────────────────
     const profSmith = await Faculty.create({
-      qu_email: "alex.smith@quinnipiac.edu",
-      first_name: "Alex",
-      last_name: "Smith",
+      qu_email: "ruby.elkharboutly@quinnipiac.edu",
+      first_name: "Ruby",
+      last_name: "ElKharboutly",
       password_hash: passwordHash,
       is_admin: true,
     });
@@ -791,7 +791,7 @@ mongoose
     console.log("══════════════════════════════════════════");
     console.log("  🔑 All accounts use password: password123");
     console.log("  Faculty:");
-    console.log("     alex.smith@quinnipiac.edu   (admin)");
+    console.log("     Ruby.ElKharboutly@quinnipiac.edu   (admin)");
     console.log("     maria.jones@quinnipiac.edu");
     console.log("  Students:");
     console.log(

@@ -8,7 +8,6 @@ const FacultySchema = new mongoose.Schema(
     password_hash: { type: String, required: true },
     is_admin: { type: Boolean, default: false },
     department: { type: String, default: "" },
-    bio: { type: String, default: "" },
     course_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
   },
   { timestamps: true },
