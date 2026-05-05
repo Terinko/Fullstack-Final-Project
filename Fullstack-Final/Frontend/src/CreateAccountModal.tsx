@@ -44,7 +44,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   });
 
   const onSubmit = (data: CreateAccountFormData) => {
-    // Pass the data forward to the password step.
     onContinue({
       email: data.email.toLowerCase(),
       firstName: data.firstName,

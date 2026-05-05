@@ -6,14 +6,11 @@ const authController = require("../controllers/authController");
 const facultyController = require("../controllers/facultyController");
 const studentController = require("../controllers/studentController");
 
-// Require JWT Token for protected routes
 const requireAuth = passport.authenticate("jwt", { session: false });
 
-// Auth (Unprotected)
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// Faculty (Protected)
 router.get("/faculty/:id", requireAuth, facultyController.faculty_detail);
 router.patch("/faculty/:id", requireAuth, facultyController.faculty_update);
 router.get(
@@ -22,7 +19,6 @@ router.get(
   facultyController.faculty_courses,
 );
 
-// Courses & Lectures (Protected)
 router.get(
   "/courses/:courseId/lectures",
   requireAuth,
@@ -34,7 +30,6 @@ router.post(
   facultyController.create_lecture,
 );
 
-// Lecture Feedback (Protected)
 router.get(
   "/lectures/:lecture_id/feedback",
   requireAuth,
@@ -47,7 +42,6 @@ router.get(
 );
 router.post("/feedback", requireAuth, studentController.submit_feedback);
 
-// Students (Protected)
 router.get("/students/:id", requireAuth, studentController.student_detail);
 router.patch("/students/:id", requireAuth, studentController.student_update);
 router.get(

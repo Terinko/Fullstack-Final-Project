@@ -13,7 +13,6 @@ const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-// Passport JWT Configuration
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: process.env.JWT_SECRET || "super_secret_fallback_key",
@@ -44,7 +43,6 @@ passport.use(
 
 app.use(passport.initialize());
 
-// Use the consolidated routes
 app.use("/api", allRoutes);
 
 const PORT = process.env.PORT || 3001;

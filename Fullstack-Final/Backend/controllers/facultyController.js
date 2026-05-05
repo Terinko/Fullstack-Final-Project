@@ -12,9 +12,8 @@ exports.faculty_detail = async (req, res) => {
   }
 };
 
-// PATCH /api/faculty/:id
-// Body: { first_name, last_name, department }
-// Only the four editable profile fields — email and password are not changed here.
+//PATCH /api/faculty/:id
+//Body: { first_name, last_name, department }
 exports.faculty_update = async (req, res) => {
   try {
     const { first_name, last_name, department } = req.body;
@@ -33,7 +32,7 @@ exports.faculty_update = async (req, res) => {
     const updated = await Faculty.findByIdAndUpdate(
       req.params.id,
       { $set: allowedUpdates },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!updated) return res.status(404).json({ error: "Faculty not found" });
@@ -44,7 +43,7 @@ exports.faculty_update = async (req, res) => {
   }
 };
 
-// GET /api/faculty/:id/courses
+//GET /api/faculty/:id/courses
 exports.faculty_courses = async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.params.id).populate(
@@ -64,7 +63,7 @@ exports.faculty_courses = async (req, res) => {
   }
 };
 
-// GET /api/courses/:courseId/lectures
+//GET /api/courses/:courseId/lectures
 exports.course_lectures = async (req, res) => {
   try {
     const lectures = await Lecture.find({
@@ -76,7 +75,7 @@ exports.course_lectures = async (req, res) => {
   }
 };
 
-// POST /api/courses/:courseId/lectures
+//POST /api/courses/:courseId/lectures
 exports.create_lecture = async (req, res) => {
   try {
     const { title, lecture_number, date } = req.body;
@@ -97,7 +96,7 @@ exports.create_lecture = async (req, res) => {
   }
 };
 
-// GET /api/lectures/:lecture_id/feedback
+//GET /api/lectures/:lecture_id/feedback
 exports.view_lecture_feedback = async (req, res) => {
   try {
     const lecture = await Lecture.findById(req.params.lecture_id).populate(

@@ -10,10 +10,9 @@ interface Lecture {
 interface LectureModalProps {
   showModal: boolean;
   onClose: () => void;
-  // Now passes both the display title and the lecture _id so FeedbackModal can POST correctly
   onContinue: (lectureTitle: string, lectureId: string) => void;
   courseName: string;
-  courseId: string; // NEW: needed to fetch lectures from /api/courses/:courseId/lectures
+  courseId: string;
 }
 
 const LectureModal: React.FC<LectureModalProps> = ({
@@ -30,7 +29,7 @@ const LectureModal: React.FC<LectureModalProps> = ({
   useEffect(() => {
     if (!showModal || !courseId) return;
 
-    const token = localStorage.getItem("token"); // Retrieve JWT
+    const token = localStorage.getItem("token");
 
     const fetchLectures = async () => {
       setLoading(true);
@@ -39,7 +38,7 @@ const LectureModal: React.FC<LectureModalProps> = ({
           `http://localhost:3001/api/courses/${courseId}/lectures`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Pass token here
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           },

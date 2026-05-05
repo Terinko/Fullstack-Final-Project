@@ -43,7 +43,6 @@ const App: React.FC = () => {
             </ul>
           </div>
 
-          {/* UPDATED: Added Create Account button next to Sign In */}
           <div className="d-flex gap-3">
             <button
               type="button"

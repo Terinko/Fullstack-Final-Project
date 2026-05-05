@@ -14,7 +14,7 @@ interface Course {
 }
 
 const Student: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Extract ID from params
+  const { id } = useParams<{ id: string }>();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLectureModal, setShowLectureModal] = useState(false);
@@ -24,19 +24,16 @@ const Student: React.FC = () => {
     name: "Loading...",
     email: "loading@quinnipiac.edu",
     department: "Loading...",
-    bio: "",
   });
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedLectureTitle, setSelectedLectureTitle] = useState<string>("");
   const [selectedLectureId, setSelectedLectureId] = useState<string>("");
 
-  // Full course objects from MongoDB
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Redirect if no ID or no token
     if (!id || !token) {
       window.location.href = "/";
       return;
@@ -58,11 +55,9 @@ const Student: React.FC = () => {
             name: `${data.first_name} ${data.last_name}`,
             email: data.qu_email,
             department: data.major || "Undecided",
-            bio: "Student at Quinnipiac University",
           });
         }
 
-        // Returns full course objects: [{ _id, name, code }]
         const coursesRes = await fetch(
           `http://localhost:3001/api/students/${id}/courses`,
           { headers },
@@ -247,7 +242,13 @@ const Student: React.FC = () => {
         showModal={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         profile={profile}
-        onSave={(data) => setProfile(data)}
+        onSave={(data) =>
+          setProfile({
+            name: `${data.firstName} ${data.lastName}`,
+            email: data.email,
+            department: data.department,
+          })
+        }
       />
     </div>
   );

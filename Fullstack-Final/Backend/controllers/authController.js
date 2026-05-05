@@ -48,7 +48,6 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create JWT Token
     const token = jwt.sign({ id: user._id, userType: userType }, JWT_SECRET, {
       expiresIn: "1d",
     });

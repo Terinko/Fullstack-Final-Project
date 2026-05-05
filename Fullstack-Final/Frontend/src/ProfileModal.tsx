@@ -81,15 +81,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     defaultValues: profileData,
   });
 
-  // Stringify the profile to prevent unnecessary resets if the parent
-  // re-renders but the actual data hasn't changed.
   const profileString = JSON.stringify(profile);
 
   useEffect(() => {
     const incoming = initializeData(profile);
     setProfileData(incoming);
 
-    // Only reset the form if the user isn't actively editing
     if (!isEditing) {
       reset(incoming);
     }
@@ -126,14 +123,14 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       ? `http://localhost:3001/api/faculty/${userId}`
       : `http://localhost:3001/api/students/${userId}`;
 
-    const token = localStorage.getItem("token"); // Retrieve JWT
+    const token = localStorage.getItem("token");
 
     try {
       const res = await fetch(url, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Pass token here
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
@@ -183,9 +180,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             />
           </div>
 
-          {/* CRITICAL FIX: We conditionally render the form tags so the 
-            "Edit Profile" button is NEVER inside a form element.
-          */}
           {isEditing ? (
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="modal-body">

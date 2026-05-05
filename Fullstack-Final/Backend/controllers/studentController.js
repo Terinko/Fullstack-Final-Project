@@ -23,8 +23,7 @@ exports.student_courses = async (req, res) => {
   }
 };
 
-// GET /api/lectures/:lecture_id/my-feedback?student_id=...
-// Returns the student's own feedback entry for a lecture, or null.
+//GET /api/lectures/:lecture_id/my-feedback?student_id=...
 exports.get_my_feedback = async (req, res) => {
   try {
     const { student_id } = req.query;
@@ -45,8 +44,7 @@ exports.get_my_feedback = async (req, res) => {
   }
 };
 
-// POST /api/feedback
-// Upserts feedback — replaces if student already submitted, pushes if first time.
+//POST /api/feedback
 exports.submit_feedback = async (req, res) => {
   try {
     const { lecture_id, student_id, clarity, pace, suggestion } = req.body;
@@ -81,7 +79,7 @@ exports.submit_feedback = async (req, res) => {
             [`feedback.${existingIndex}.submitted`]: new Date(),
           },
         },
-        { new: true },
+        { returnDocument: "after" },
       );
     } else {
       updatedLecture = await Lecture.findByIdAndUpdate(
@@ -96,7 +94,7 @@ exports.submit_feedback = async (req, res) => {
             },
           },
         },
-        { new: true },
+        { returnDocument: "after" },
       );
     }
 
@@ -111,17 +109,16 @@ exports.submit_feedback = async (req, res) => {
   }
 };
 
-// PATCH /api/students/:id
-// Body: { first_name, last_name, major, bio }
+//PATCH /api/students/:id
+//Body: { first_name, last_name, major, bio }
 exports.student_update = async (req, res) => {
   try {
-    const { first_name, last_name, major, bio } = req.body;
+    const { first_name, last_name, major } = req.body;
 
     const allowedUpdates = {};
     if (first_name !== undefined) allowedUpdates.first_name = first_name.trim();
     if (last_name !== undefined) allowedUpdates.last_name = last_name.trim();
     if (major !== undefined) allowedUpdates.major = major.trim();
-    if (bio !== undefined) allowedUpdates.bio = bio.trim();
 
     if (Object.keys(allowedUpdates).length === 0) {
       return res
@@ -132,7 +129,7 @@ exports.student_update = async (req, res) => {
     const updated = await Student.findByIdAndUpdate(
       req.params.id,
       { $set: allowedUpdates },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!updated) return res.status(404).json({ error: "Student not found" });

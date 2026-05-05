@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import bobcatLogo from "./assets/bobcat.png";
 import FacultyFeedbackModal from "./FacultyFeedbackModal";
 import ProfileModal from "./ProfileModal";
-import profilePicture from "./assets/athimineur.jpeg";
 import "./Student.css";
 
 interface CourseSection {
@@ -25,7 +24,7 @@ interface FeedbackEntry {
 }
 
 const FacultyAdmin: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Extract ID from params
+  const { id } = useParams<{ id: string }>();
 
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -37,12 +36,10 @@ const FacultyAdmin: React.FC = () => {
     name: "Loading...",
     email: "loading@quinnipiac.edu",
     department: "Loading...",
-    profilePicture: profilePicture,
   });
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
-  // Lectures per course — fetched when a course is expanded
   const [courseLectures, setCourseLectures] = useState<
     Record<string, { _id: string; title: string; lecture_number: number }[]>
   >({});
@@ -72,7 +69,6 @@ const FacultyAdmin: React.FC = () => {
             name: `${profileData.first_name} ${profileData.last_name}`,
             email: profileData.qu_email,
             department: profileData.department || "Faculty Department",
-            profilePicture: profilePicture,
           });
         }
 
@@ -104,7 +100,6 @@ const FacultyAdmin: React.FC = () => {
 
     setExpandedCourse(courseName);
 
-    // Fetch lectures for this course if we don't have them yet
     if (courseId && !courseLectures[courseId]) {
       try {
         const res = await fetch(
@@ -316,7 +311,13 @@ const FacultyAdmin: React.FC = () => {
         showModal={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         profile={profile}
-        onSave={(data) => setProfile(data)}
+        onSave={(data) =>
+          setProfile({
+            name: `${data.firstName} ${data.lastName}`,
+            email: data.email,
+            department: data.department,
+          })
+        }
       />
     </div>
   );

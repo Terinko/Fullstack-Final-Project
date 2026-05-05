@@ -25,13 +25,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
   const [success, setSuccess] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
 
-  // When the modal opens for a specific lecture, check if the student already
-  // submitted feedback and pre-fill the form with their previous answers.
   useEffect(() => {
     if (!showModal || !lectureId) return;
 
     const studentId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token"); // Retrieve JWT
+    const token = localStorage.getItem("token");
 
     if (!studentId || !token) return;
 
@@ -42,7 +40,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
           `http://localhost:3001/api/lectures/${lectureId}/my-feedback?student_id=${studentId}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Pass token here
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           },
@@ -50,13 +48,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
         if (res.ok) {
           const existing = await res.json();
           if (existing) {
-            // Pre-fill with their previous submission
             setClarity(existing.clarity);
             setPace(existing.pace);
             setSuggestions(existing.suggestion || "");
             setIsUpdate(true);
           } else {
-            // No prior submission — reset to blank
             setClarity(0);
             setPace("");
             setSuggestions("");
@@ -83,14 +79,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     setError("");
 
     const studentId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token"); // Retrieve JWT
+    const token = localStorage.getItem("token");
 
     try {
       const res = await fetch("http://localhost:3001/api/feedback", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Pass token here
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           lecture_id: lectureId,
@@ -134,7 +130,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
       >
         <div className="modal-content">
           <div className="modal-header d-flex flex-column align-items-start">
-            {/* Back Button */}
             <button
               type="button"
               className="btn btn-link text-dark text-decoration-none mb-2"
@@ -148,10 +143,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
               Back
             </button>
 
-            {/* Title now sits naturally below the button */}
             <h5 className="modal-title m-0">{lectureTitle} Feedback</h5>
 
-            {/* Standard Bootstrap close button */}
             <button
               type="button"
               className="btn-close"

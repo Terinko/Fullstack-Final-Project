@@ -7,7 +7,6 @@ const LectureSchema = new Schema({
   course_id: { type: Schema.Types.ObjectId, ref: "Course", required: true },
   date: { type: Date, default: Date.now },
 
-  // Embedded feedback array — one entry per student submission
   feedback: [
     {
       student_id: {
