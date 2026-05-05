@@ -1,37 +1,59 @@
 const express = require("express");
 const router = express.Router();
+const passport = require("passport");
 
 const authController = require("../controllers/authController");
 const facultyController = require("../controllers/facultyController");
 const studentController = require("../controllers/studentController");
 
-// Auth
+// Require JWT Token for protected routes
+const requireAuth = passport.authenticate("jwt", { session: false });
+
+// Auth (Unprotected)
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// Faculty
-router.get("/faculty/:id", facultyController.faculty_detail);
-router.patch("/faculty/:id", facultyController.faculty_update);
-router.get("/faculty/:id/courses", facultyController.faculty_courses);
+// Faculty (Protected)
+router.get("/faculty/:id", requireAuth, facultyController.faculty_detail);
+router.patch("/faculty/:id", requireAuth, facultyController.faculty_update);
+router.get(
+  "/faculty/:id/courses",
+  requireAuth,
+  facultyController.faculty_courses,
+);
 
-// Courses & Lectures
-router.get("/courses/:courseId/lectures", facultyController.course_lectures);
-router.post("/courses/:courseId/lectures", facultyController.create_lecture);
+// Courses & Lectures (Protected)
+router.get(
+  "/courses/:courseId/lectures",
+  requireAuth,
+  facultyController.course_lectures,
+);
+router.post(
+  "/courses/:courseId/lectures",
+  requireAuth,
+  facultyController.create_lecture,
+);
 
-// Lecture Feedback
+// Lecture Feedback (Protected)
 router.get(
   "/lectures/:lecture_id/feedback",
+  requireAuth,
   facultyController.view_lecture_feedback,
 );
 router.get(
   "/lectures/:lecture_id/my-feedback",
+  requireAuth,
   studentController.get_my_feedback,
 );
-router.post("/feedback", studentController.submit_feedback);
+router.post("/feedback", requireAuth, studentController.submit_feedback);
 
-// Students
-router.get("/students/:id", studentController.student_detail);
-router.patch("/students/:id", studentController.student_update);
-router.get("/students/:id/courses", studentController.student_courses);
+// Students (Protected)
+router.get("/students/:id", requireAuth, studentController.student_detail);
+router.patch("/students/:id", requireAuth, studentController.student_update);
+router.get(
+  "/students/:id/courses",
+  requireAuth,
+  studentController.student_courses,
+);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import bobcatLogo from "./assets/bobcat.png";
 import FacultyFeedbackModal from "./FacultyFeedbackModal";
 import ProfileModal from "./ProfileModal";
@@ -24,6 +25,8 @@ interface FeedbackEntry {
 }
 
 const FacultyAdmin: React.FC = () => {
+  const { id } = useParams<{ id: string }>(); // Extract ID from params
+
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedLectureLabel, setSelectedLectureLabel] = useState<string>("");
@@ -45,16 +48,23 @@ const FacultyAdmin: React.FC = () => {
   >({});
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
+    const token = localStorage.getItem("token");
+
+    if (!id || !token) {
       window.location.href = "/";
       return;
     }
 
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     const fetchDashboardData = async () => {
       try {
         const profileRes = await fetch(
-          `http://localhost:3001/api/faculty/${userId}`,
+          `http://localhost:3001/api/faculty/${id}`,
+          { headers },
         );
         if (profileRes.ok) {
           const profileData = await profileRes.json();
@@ -67,7 +77,8 @@ const FacultyAdmin: React.FC = () => {
         }
 
         const coursesRes = await fetch(
-          `http://localhost:3001/api/faculty/${userId}/courses`,
+          `http://localhost:3001/api/faculty/${id}/courses`,
+          { headers },
         );
         if (coursesRes.ok) {
           const coursesData = await coursesRes.json();
@@ -79,11 +90,12 @@ const FacultyAdmin: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [id]);
 
   const toggleCourse = async (course: Course) => {
     const courseName = course.courseName;
     const courseId = course._id;
+    const token = localStorage.getItem("token");
 
     if (expandedCourse === courseName) {
       setExpandedCourse(null);
@@ -97,6 +109,12 @@ const FacultyAdmin: React.FC = () => {
       try {
         const res = await fetch(
           `http://localhost:3001/api/courses/${courseId}/lectures`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
         if (res.ok) {
           const lectures = await res.json();
@@ -117,9 +135,17 @@ const FacultyAdmin: React.FC = () => {
     setFeedbackLoading(true);
     setShowFeedbackModal(true);
 
+    const token = localStorage.getItem("token");
+
     try {
       const res = await fetch(
         `http://localhost:3001/api/lectures/${lectureId}/feedback`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
       if (res.ok) {
         const data = await res.json();

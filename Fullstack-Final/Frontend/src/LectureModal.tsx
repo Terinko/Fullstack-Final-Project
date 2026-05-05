@@ -30,11 +30,19 @@ const LectureModal: React.FC<LectureModalProps> = ({
   useEffect(() => {
     if (!showModal || !courseId) return;
 
+    const token = localStorage.getItem("token"); // Retrieve JWT
+
     const fetchLectures = async () => {
       setLoading(true);
       try {
         const res = await fetch(
           `http://localhost:3001/api/courses/${courseId}/lectures`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Pass token here
+              "Content-Type": "application/json",
+            },
+          },
         );
         if (res.ok) {
           const data = await res.json();

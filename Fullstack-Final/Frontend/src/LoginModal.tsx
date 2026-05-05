@@ -57,13 +57,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ showModal, onClose }) => {
 
       localStorage.setItem("userId", resData.id);
       localStorage.setItem("userType", resData.userType);
+      localStorage.setItem("token", resData.token); // Save JWT
 
       handleClose();
 
       if (resData.userType === "Student") {
-        navigate("/studentdashboard");
+        navigate(`/studentdashboard/${resData.id}`);
       } else {
-        navigate("/facultyAdmin");
+        navigate(`/facultyAdmin/${resData.id}`);
       }
     } catch (err) {
       setApiError(

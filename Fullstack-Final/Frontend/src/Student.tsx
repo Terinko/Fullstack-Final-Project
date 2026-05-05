@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import bobcatLogo from "./assets/bobcat.png";
 import LoginModal from "./LoginModal";
 import LectureModal from "./LectureModal";
@@ -13,6 +14,8 @@ interface Course {
 }
 
 const Student: React.FC = () => {
+  const { id } = useParams<{ id: string }>(); // Extract ID from params
+
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLectureModal, setShowLectureModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -31,15 +34,24 @@ const Student: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
+    const token = localStorage.getItem("token");
+
+    // Redirect if no ID or no token
+    if (!id || !token) {
       window.location.href = "/";
       return;
     }
 
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     const fetchStudentData = async () => {
       try {
-        const res = await fetch(`http://localhost:3001/api/students/${userId}`);
+        const res = await fetch(`http://localhost:3001/api/students/${id}`, {
+          headers,
+        });
         if (res.ok) {
           const data = await res.json();
           setProfile({
@@ -52,7 +64,8 @@ const Student: React.FC = () => {
 
         // Returns full course objects: [{ _id, name, code }]
         const coursesRes = await fetch(
-          `http://localhost:3001/api/students/${userId}/courses`,
+          `http://localhost:3001/api/students/${id}/courses`,
+          { headers },
         );
         if (coursesRes.ok) {
           const coursesData = await coursesRes.json();
@@ -64,7 +77,7 @@ const Student: React.FC = () => {
     };
 
     fetchStudentData();
-  }, []);
+  }, [id]);
 
   const handleCourseClick = (course: Course) => {
     setSelectedCourse(course);

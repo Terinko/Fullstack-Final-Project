@@ -126,10 +126,15 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       ? `http://localhost:3001/api/faculty/${userId}`
       : `http://localhost:3001/api/students/${userId}`;
 
+    const token = localStorage.getItem("token"); // Retrieve JWT
+
     try {
       const res = await fetch(url, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Pass token here
+        },
         body: JSON.stringify(body),
       });
       const resData = await res.json();

@@ -1,8 +1,10 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const Student = require("../models/Student");
 const Faculty = require("../models/Faculty");
 
 const SALT_ROUNDS = 12;
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_fallback_key";
 
 exports.register = async (req, res) => {
   const { email, firstName, lastName, userType, password } = req.body;
@@ -15,6 +17,7 @@ exports.register = async (req, res) => {
 
   try {
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+    let user;
 
     if (userType === "Student") {
       const exists = await Student.findOne({ qu_email: fullEmail });
@@ -23,14 +26,12 @@ exports.register = async (req, res) => {
           .status(409)
           .json({ error: "An account with this email already exists" });
 
-      const student = await Student.create({
+      user = await Student.create({
         qu_email: fullEmail,
         first_name: firstName,
         last_name: lastName,
         password_hash,
       });
-
-      return res.status(201).json({ id: student._id, userType: "Student" });
     } else {
       const exists = await Faculty.findOne({ qu_email: fullEmail });
       if (exists)
@@ -38,16 +39,21 @@ exports.register = async (req, res) => {
           .status(409)
           .json({ error: "An account with this email already exists" });
 
-      const faculty = await Faculty.create({
+      user = await Faculty.create({
         qu_email: fullEmail,
         first_name: firstName,
         last_name: lastName,
         password_hash,
         is_admin: false,
       });
-
-      return res.status(201).json({ id: faculty._id, userType: "Faculty" });
     }
+
+    // Create JWT Token
+    const token = jwt.sign({ id: user._id, userType: userType }, JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    return res.status(201).json({ id: user._id, userType, token });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -75,7 +81,12 @@ exports.login = async (req, res) => {
     if (!valid)
       return res.status(401).json({ error: "Invalid email or password" });
 
-    return res.json({ id: user._id, userType });
+    // Create JWT Token
+    const token = jwt.sign({ id: user._id, userType }, JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    return res.json({ id: user._id, userType, token });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

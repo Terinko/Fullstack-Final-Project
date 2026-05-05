@@ -31,13 +31,21 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     if (!showModal || !lectureId) return;
 
     const studentId = localStorage.getItem("userId");
-    if (!studentId) return;
+    const token = localStorage.getItem("token"); // Retrieve JWT
+
+    if (!studentId || !token) return;
 
     const fetchExisting = async () => {
       setPrefilling(true);
       try {
         const res = await fetch(
           `http://localhost:3001/api/lectures/${lectureId}/my-feedback?student_id=${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Pass token here
+              "Content-Type": "application/json",
+            },
+          },
         );
         if (res.ok) {
           const existing = await res.json();
@@ -75,11 +83,15 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     setError("");
 
     const studentId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token"); // Retrieve JWT
 
     try {
       const res = await fetch("http://localhost:3001/api/feedback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Pass token here
+        },
         body: JSON.stringify({
           lecture_id: lectureId,
           student_id: studentId,
